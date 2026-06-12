@@ -29,9 +29,15 @@ func main() {
 
 	templates = template.Must(template.New("").Funcs(funcMap).ParseGlob("views/*.html"))
 	template.Must(templates.ParseGlob("views/layouts/*.html"))
+	template.Must(templates.ParseGlob("views/admin/*.html"))
 
 	// Router
 	r := mux.NewRouter()
+	// Auth routes
+	r.HandleFunc("/login", loginHandler).Methods("GET")
+	r.HandleFunc("/login", doLoginHandler).Methods("POST")
+	r.HandleFunc("/admin/dashboard", adminDashboardHandler).Methods("GET")
+	r.HandleFunc("/logout", logoutHandler).Methods("GET")
 
 	// Static files
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
@@ -298,4 +304,34 @@ func wargaDetailHandler(w http.ResponseWriter, r *http.Request) {
 		"Warga": warga,
 	}
 	templates.ExecuteTemplate(w, "warga_detail.html", data)
+}
+
+// ==================== LOGIN ADMIN ====================
+func loginHandler(w http.ResponseWriter, r *http.Request) {
+	data := map[string]interface{}{
+		"error": r.URL.Query().Get("error"),
+	}
+	templates.ExecuteTemplate(w, "admin/login.html", data)
+}
+
+func doLoginHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	email := r.FormValue("email")
+	password := r.FormValue("password")
+
+	if email == "admin@desa.com" && password == "password" {
+		// Redirect ke dashboard admin
+		http.Redirect(w, r, "/admin/dashboard", http.StatusSeeOther)
+		return
+	}
+
+	http.Redirect(w, r, "/login?error=Email+atau+password+salah", http.StatusSeeOther)
+}
+
+func adminDashboardHandler(w http.ResponseWriter, r *http.Request) {
+	templates.ExecuteTemplate(w, "admin/dashboard.html", nil)
+}
+
+func logoutHandler(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
