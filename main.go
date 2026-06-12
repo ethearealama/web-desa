@@ -56,7 +56,6 @@ func main() {
 	r.HandleFunc("/surat/kirim", kirimSuratHandler).Methods("POST")
 	r.HandleFunc("/warga", wargaHandler).Methods("GET")
 	r.HandleFunc("/warga/{id}", wargaDetailHandler).Methods("GET")
->>>>>>> c6527f3d13f058976d228c3e3b1b64bf87704530
 
 	fmt.Println("🌐 Server running on http://localhost:9090")
 	log.Fatal(http.ListenAndServe(":9090", r))
@@ -133,28 +132,11 @@ func beritaHandler(w http.ResponseWriter, r *http.Request) {
 	templates.ExecuteTemplate(w, "berita.html", data)
 }
 
-<<<<<<< HEAD
+
 // WISATA ADMIN
-func adminWisataIndexHandler(w http.ResponseWriter, r *http.Request) {
-    data := map[string]interface{}{
-        "Title": "Data Wisata",
-    }
-
-    templates.ExecuteTemplate(w, "index.html", data)
-}
-
-func adminWisataCreateHandler(w http.ResponseWriter, r *http.Request) {
-    data := map[string]interface{}{
-        "Title": "Tambah Wisata",
-    }
-
-    templates.ExecuteTemplate(w, "create.html", data)
-}
 
 
 // WISATA
-func wisataHandler(w http.ResponseWriter, r *http.Request) {
-=======
 func beritaDetailHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, _ := strconv.Atoi(vars["id"])
