@@ -1,0 +1,98 @@
+{{define "surat_tracking.html"}}
+{{template "header.html" .}}
+
+<div class="container mx-auto px-4 py-8 max-w-2xl">
+    <h1 class="text-3xl font-bold text-green-800 mb-6 text-center">Cek Status Pengajuan Surat</h1>
+
+    <!-- Form Pencarian -->
+    <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+        <form method="GET" action="/surat/tracking" class="flex flex-col sm:flex-row gap-3">
+            <input type="text" name="no_pengajuan" placeholder="Masukkan nomor pengajuan" 
+                   class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                   value="{{.no_pengajuan}}" required>
+            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 rounded-lg transition">
+                Cek Status
+            </button>
+        </form>
+    </div>
+
+    <!-- Hasil Pencarian -->
+    {{if .Cek}}
+        {{if .Hasil}}
+        <div class="bg-white rounded-xl shadow-md overflow-hidden">
+            <div class="bg-green-700 px-6 py-4">
+                <h2 class="text-xl font-bold text-white">Detail Pengajuan Surat</h2>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <div class="text-sm text-gray-500">Nomor Pengajuan</div>
+                        <div class="font-semibold">{{.Hasil.NoPengajuan}}</div>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-500">Status</div>
+                        <div>
+                            {{if eq .Hasil.Status "pending"}}
+                                <span class="inline-block px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">Menunggu Verifikasi</span>
+                            {{else if eq .Hasil.Status "diproses"}}
+                                <span class="inline-block px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">Sedang Diproses</span>
+                            {{else if eq .Hasil.Status "selesai"}}
+                                <span class="inline-block px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">Selesai</span>
+                            {{else}}
+                                <span class="inline-block px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">Ditolak</span>
+                            {{end}}
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <div class="text-sm text-gray-500">Nama</div>
+                        <div class="font-semibold">{{.Hasil.Nama}}</div>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-500">NIK</div>
+                        <div class="font-semibold">{{.Hasil.NIK}}</div>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <div class="text-sm text-gray-500">Alamat</div>
+                    <div class="font-semibold">{{.Hasil.Alamat}}</div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <div class="text-sm text-gray-500">Jenis Surat</div>
+                        <div class="font-semibold">{{.Hasil.JenisSurat}}</div>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-500">No HP</div>
+                        <div class="font-semibold">{{.Hasil.NoHP}}</div>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <div class="text-sm text-gray-500">Keperluan</div>
+                    <div class="font-semibold">{{.Hasil.Keperluan}}</div>
+                </div>
+                {{if .Hasil.CatatanAdmin}}
+                <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+                    <div class="text-sm text-gray-500">Catatan Admin</div>
+                    <div class="font-semibold">{{.Hasil.CatatanAdmin}}</div>
+                </div>
+                {{end}}
+                {{if .Hasil.TanggalSelesai}}
+                <div class="mt-4 text-sm text-gray-500">
+                    Selesai pada: {{.Hasil.TanggalSelesai}}
+                </div>
+                {{end}}
+            </div>
+        </div>
+        {{else}}
+        <div class="bg-yellow-50 border-l-4 border-yellow-500 rounded-lg p-6">
+            <h2 class="text-xl font-bold text-yellow-800 mb-2">⚠️ Data Tidak Ditemukan</h2>
+            <p class="text-gray-600">Nomor pengajuan <strong>{{.no_pengajuan}}</strong> tidak ditemukan.</p>
+        </div>
+        {{end}}
+    {{end}}
+</div>
+
+{{template "footer.html" .}}
+{{end}}

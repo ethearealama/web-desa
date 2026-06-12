@@ -1,0 +1,67 @@
+{{define "surat.html"}}
+{{template "header.html" .}}
+
+<div class="container mx-auto px-4 py-8 max-w-2xl">
+    <h1 class="text-3xl font-bold text-green-800 mb-2 text-center">Layanan Surat Online</h1>
+    <p class="text-gray-600 text-center mb-8">Ajukan surat menyurat secara online tanpa harus ke kantor desa</p>
+
+    {{if .success}}
+    <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-lg mb-6">
+        ✅ Pengajuan surat berhasil!<br>
+        Nomor pengajuan Anda: <strong class="font-bold">{{.no_pengajuan}}</strong><br>
+        Simpan nomor ini untuk cek status.
+    </div>
+    {{end}}
+
+    <div class="bg-white rounded-xl shadow-md p-6">
+        <form method="POST" action="/surat/kirim">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Nama Lengkap <span class="text-red-500">*</span></label>
+                    <input type="text" name="nama" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">NIK <span class="text-red-500">*</span></label>
+                    <input type="text" name="nik" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500" maxlength="16" required>
+                </div>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 font-semibold mb-2">Alamat <span class="text-red-500">*</span></label>
+                <textarea name="alamat" rows="2" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500" required></textarea>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">No HP <span class="text-red-500">*</span></label>
+                    <input type="text" name="no_hp" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Jenis Surat <span class="text-red-500">*</span></label>
+                    <select name="jenis_surat" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                        <option value="">-- Pilih Jenis Surat --</option>
+                        <option value="SKD">Surat Keterangan Domisili</option>
+                        <option value="SKU">Surat Keterangan Usaha</option>
+                        <option value="SKTM">Surat Keterangan Tidak Mampu</option>
+                        <option value="SPKK">Surat Pengantar KK</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 font-semibold mb-2">Keperluan <span class="text-red-500">*</span></label>
+                <textarea name="keperluan" rows="3" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Jelaskan keperluan pengajuan surat ini..." required></textarea>
+            </div>
+            <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded-lg transition">
+                Ajukan Surat
+            </button>
+        </form>
+    </div>
+
+    <div class="mt-8 text-center">
+        <p class="text-sm text-gray-500">
+            Sudah mengajukan surat? 
+            <a href="/surat/tracking" class="text-green-600 hover:text-green-800 font-semibold">Cek Status Pengajuan</a>
+        </p>
+    </div>
+</div>
+
+{{template "footer.html" .}}
+{{end}}
