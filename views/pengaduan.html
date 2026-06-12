@@ -1,0 +1,46 @@
+{{define "pengaduan.html"}}
+{{template "header.html" .}}
+
+<div class="container mx-auto px-4 py-8 max-w-2xl">
+    <h1 class="text-3xl font-bold text-green-800 mb-2 text-center">Layanan Pengaduan Warga</h1>
+    <p class="text-gray-600 text-center mb-8">Sampaikan keluhan, saran, atau aspirasi Anda untuk kemajuan desa.</p>
+
+    {{if .success}}
+    <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-lg mb-6">
+        ✅ Pengaduan berhasil dikirim. Terima kasih atas masukannya.
+    </div>
+    {{end}}
+
+    <div class="bg-white rounded-xl shadow-md p-6">
+        <form method="POST" action="/pengaduan/kirim">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Nama Lengkap <span class="text-red-500">*</span></label>
+                    <input type="text" name="nama" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">NIK</label>
+                    <input type="text" name="nik" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500" maxlength="16">
+                </div>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 font-semibold mb-2">No HP <span class="text-red-500">*</span></label>
+                <input type="text" name="no_hp" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 font-semibold mb-2">Judul Pengaduan <span class="text-red-500">*</span></label>
+                <input type="text" name="judul" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 font-semibold mb-2">Isi Pengaduan <span class="text-red-500">*</span></label>
+                <textarea name="isi" rows="5" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500" required></textarea>
+            </div>
+            <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded-lg transition">
+                Kirim Pengaduan
+            </button>
+        </form>
+    </div>
+</div>
+
+{{template "footer.html" .}}
+{{end}}
