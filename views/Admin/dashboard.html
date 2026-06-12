@@ -1,49 +1,11 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Admin - Desa Sukaindah</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Dashboard Admin</title>
 </head>
-<body class="bg-gray-100">
-    <!-- Navbar Admin -->
-    <nav class="bg-green-700 text-white shadow-lg">
-        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <img src="/static/images/logo-desa.png" class="h-8 w-auto" alt="Logo">
-                <span class="font-bold">Admin Panel - Desa Sukaindah</span>
-            </div>
-            <a href="/logout" class="bg-red-600 hover:bg-red-700 text-white text-sm px-4 py-1 rounded-full transition">Logout</a>
-        </div>
-    </nav>
-
-    <div class="container mx-auto px-4 py-8">
-        <div class="bg-white rounded-xl shadow-md p-6 mb-6">
-            <h1 class="text-2xl font-bold text-green-800 mb-2">Selamat Datang, Admin!</h1>
-            <p class="text-gray-600">Ini adalah panel administrasi Desa Sukaindah.</p>
-        </div>
-
-        <div class="grid md:grid-cols-3 gap-6">
-            <div class="bg-white rounded-xl shadow-md p-6 text-center hover:shadow-lg transition">
-                <div class="text-3xl mb-2">📰</div>
-                <h3 class="font-bold text-lg">Kelola Berita</h3>
-                <p class="text-sm text-gray-500 mt-1">Tambah, edit, hapus berita</p>
-                <a href="/admin/berita" class="inline-block mt-3 text-green-600 text-sm hover:underline">Kelola →</a>
-            </div>
-            <div class="bg-white rounded-xl shadow-md p-6 text-center hover:shadow-lg transition">
-                <div class="text-3xl mb-2">🏞️</div>
-                <h3 class="font-bold text-lg">Kelola Wisata</h3>
-                <p class="text-sm text-gray-500 mt-1">Tambah, edit, hapus wisata</p>
-                <a href="/admin/wisata" class="inline-block mt-3 text-green-600 text-sm hover:underline">Kelola →</a>
-            </div>
-            <div class="bg-white rounded-xl shadow-md p-6 text-center hover:shadow-lg transition">
-                <div class="text-3xl mb-2">👥</div>
-                <h3 class="font-bold text-lg">Data Warga</h3>
-                <p class="text-sm text-gray-500 mt-1">Lihat data warga</p>
-                <a href="/warga" class="inline-block mt-3 text-green-600 text-sm hover:underline">Lihat →</a>
-            </div>
-        </div>
-    </div>
+<body>
+    <h1>Dashboard Admin</h1>
+    <p>Selamat datang, Admin!</p>
+    <a href="/logout">Logout</a>
 </body>
 </html>

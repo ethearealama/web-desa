@@ -28,7 +28,6 @@ func main() {
 	if err != nil {
 		log.Fatal("Database tidak merespon:", err)
 	}
-	fmt.Println("✅ Koneksi database berhasil!")
 
 	// Template functions
 	funcMap := template.FuncMap{
@@ -36,9 +35,9 @@ func main() {
 		"formatDate": func(t time.Time) string { return t.Format("02 Jan 2006") },
 	}
 
-	// Load semua template
 	templates = template.Must(template.New("").Funcs(funcMap).ParseGlob("views/*.html"))
 	template.Must(templates.ParseGlob("views/layouts/*.html"))
+	template.Must(templates.ParseGlob("views/admin/*.html")) // ← TAMBAHKAN BARIS INI
 
 	// Router
 	r := mux.NewRouter()
@@ -74,10 +73,22 @@ func main() {
 
 // ==================== HOME ====================
 func homeHandler(w http.ResponseWriter, r *http.Request) {
-	data := map[string]interface{}{
-		"Title": "Beranda",
-	}
-	templates.ExecuteTemplate(w, "index.html", data)
+    var totalPenduduk, totalKK, totalRW, totalWisata int
+
+    // Ambil dari database
+    db.QueryRow("SELECT COUNT(*) FROM warga").Scan(&totalPenduduk)
+    db.QueryRow("SELECT COUNT(DISTINCT no_kk) FROM warga WHERE no_kk IS NOT NULL AND no_kk != ''").Scan(&totalKK)
+    db.QueryRow("SELECT COUNT(DISTINCT rw) FROM warga WHERE rw IS NOT NULL AND rw != ''").Scan(&totalRW)
+    db.QueryRow("SELECT COUNT(*) FROM wisatas").Scan(&totalWisata)
+
+    data := map[string]interface{}{
+        "Title":         "Beranda",
+        "TotalPenduduk": totalPenduduk,
+        "TotalKK":       totalKK,
+        "TotalRW":       totalRW,
+        "TotalWisata":   totalWisata,
+    }
+    templates.ExecuteTemplate(w, "index.html", data)
 }
 
 func profilHandler(w http.ResponseWriter, r *http.Request) {
@@ -373,34 +384,14 @@ func doLoginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func adminDashboardHandler(w http.ResponseWriter, r *http.Request) {
-	html := `
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Dashboard Admin</title>
-        <style>
-            body { font-family: Arial; background: #f0f2f5; margin: 0; padding: 20px; }
-            .navbar { background: #2e7d32; color: white; padding: 15px; text-align: center; }
-            .container { max-width: 800px; margin: 20px auto; background: white; padding: 20px; border-radius: 10px; }
-            h1 { color: #2e7d32; }
-            .btn { background: #2e7d32; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 20px; }
-            .btn:hover { background: #1b5e20; }
-        </style>
-    </head>
-    <body>
-        <div class="navbar">
-            <h2>Admin Panel - Desa Sukaindah</h2>
-        </div>
-        <div class="container">
-            <h1>Selamat Datang, Admin!</h1>
-            <p>Ini adalah dashboard admin Desa Sukaindah.</p>
-            <a href="/logout" class="btn">Logout</a>
-        </div>
-    </body>
-    </html>
-    `
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(html))
+	data := map[string]interface{}{
+		"Title": "Dashboard Admin",
+	}
+	err := templates.ExecuteTemplate(w, "admin/dashboard.html", data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func logoutHandler(w http.ResponseWriter, r *http.Request) {
