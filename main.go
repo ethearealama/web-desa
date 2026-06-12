@@ -56,6 +56,7 @@ func main() {
 	r.HandleFunc("/surat/kirim", kirimSuratHandler).Methods("POST")
 	r.HandleFunc("/warga", wargaHandler).Methods("GET")
 	r.HandleFunc("/warga/{id}", wargaDetailHandler).Methods("GET")
+	r.HandleFunc("/admin/wisata/create", adminWisataCreateHandler).Methods("GET")
 
 	fmt.Println("🌐 Server running on http://localhost:9090")
 	log.Fatal(http.ListenAndServe(":9090", r))
@@ -134,9 +135,7 @@ func beritaHandler(w http.ResponseWriter, r *http.Request) {
 	templates.ExecuteTemplate(w, "berita.html", data)
 }
 
-// WISATA ADMIN
-
-// WISATA
+// BERITA
 func beritaDetailHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, _ := strconv.Atoi(vars["id"])
@@ -179,6 +178,11 @@ func wisataHandler(w http.ResponseWriter, r *http.Request) {
 		"WisataList": wisataList,
 	}
 	templates.ExecuteTemplate(w, "wisata.html", data)
+}
+
+// ADMIN
+func adminWisataCreateHandler(w http.ResponseWriter, r *http.Request) {
+	templates.ExecuteTemplate(w, "admin/create_wisata.html", nil)
 }
 
 // ==================== PENGADUAN ====================

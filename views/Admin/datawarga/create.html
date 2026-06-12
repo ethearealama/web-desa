@@ -1,0 +1,66 @@
+{{define "admin/warga/create.html"}}
+
+{{template "admin_header" .}}
+{{template "admin_sidebar" .}}
+
+<div class="main">
+
+    <div class="header">
+        <h1>Tambah Data Warga</h1>
+        <p>Isi data warga dengan lengkap dan benar.</p>
+    </div>
+
+    <div class="form-box">
+
+        <form action="/admin/warga" method="POST">
+
+            <div class="form-group">
+                <label>Nama Lengkap</label>
+                <input type="text"
+                       name="nama_lengkap"
+                       class="form-control"
+                       required>
+            </div>
+
+            <div class="form-group">
+                <label>NIK</label>
+                <input type="text"
+                       name="nik"
+                       class="form-control"
+                       required>
+            </div>
+
+            <div class="form-group">
+                <label>Alamat</label>
+                <textarea name="alamat"
+                          rows="3"
+                          class="form-control"
+                          required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>No HP</label>
+                <input type="text"
+                       name="no_hp"
+                       class="form-control">
+            </div>
+
+            <div class="flex-buttons">
+                <a href="/admin/warga" class="btn btn-batal">
+                    ← Kembali
+                </a>
+
+                <button type="submit" class="btn btn-simpan">
+                    Simpan Data Warga
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{{template "admin_footer" .}}
+
+{{end}}
