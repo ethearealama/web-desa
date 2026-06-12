@@ -73,11 +73,13 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 
 func getStatistik() models.StatistikDesa {
 	var stat models.StatistikDesa
-	row := config.DB.QueryRow("SELECT jumlah_penduduk, jumlah_kk, jumlah_rw, jumlah_wisata FROM statistik_desas LIMIT 1")
-	err := row.Scan(&stat.JumlahPenduduk, &stat.JumlahKK, &stat.JumlahRW, &stat.JumlahWisata)
-	if err != nil {
-		return models.StatistikDesa{5240, 1450, 12, 8}
-	}
+
+	// Hitung dari tabel warga
+	config.DB.QueryRow("SELECT COUNT(*) FROM warga").Scan(&stat.JumlahPenduduk)
+	config.DB.QueryRow("SELECT COUNT(DISTINCT no_kk) FROM warga WHERE no_kk IS NOT NULL AND no_kk != ''").Scan(&stat.JumlahKK)
+	config.DB.QueryRow("SELECT COUNT(DISTINCT rw) FROM warga WHERE rw IS NOT NULL AND rw != ''").Scan(&stat.JumlahRW)
+	config.DB.QueryRow("SELECT COUNT(*) FROM wisatas").Scan(&stat.JumlahWisata)
+
 	return stat
 }
 

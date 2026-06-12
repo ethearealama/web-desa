@@ -1,0 +1,36 @@
+{{define "berita.html"}}
+{{template "header.html" .}}
+
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-green-800 mb-6">Berita Desa</h1>
+
+    {{if .BeritaList}}
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {{range .BeritaList}}
+            <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition">
+                {{if .Gambar}}
+                <img src="/static/uploads/berita/{{.Gambar}}" class="w-full h-48 object-cover">
+                {{else}}
+                <div class="w-full h-48 bg-gradient-to-r from-green-400 to-green-600 flex items-center justify-center">
+                    <span class="text-white font-bold">Desa Sukaindah</span>
+                </div>
+                {{end}}
+                <div class="p-4">
+                    <h2 class="text-xl font-bold text-green-700">{{.Judul}}</h2>
+                    <p class="text-gray-500 text-sm mt-1">{{formatDate .CreatedAt}}</p>
+                    <p class="text-gray-600 mt-2">{{slice .Isi 0 100}}...</p>
+                    <a href="/berita/{{.ID}}" class="inline-block mt-3 text-green-600 hover:text-green-800 font-semibold">Baca Selengkapnya →</a>
+                </div>
+            </div>
+            {{end}}
+        </div>
+    {{else}}
+        <div class="text-center text-gray-500 py-12">
+            <p>Belum ada berita.</p>
+            <p class="text-sm mt-2">Silakan tambah berita melalui admin panel.</p>
+        </div>
+    {{end}}
+</div>
+
+{{template "footer.html" .}}
+{{end}}
