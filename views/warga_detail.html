@@ -1,0 +1,49 @@
+{{define "warga_detail.html"}}
+{{template "header.html" .}}
+
+<div class="container mx-auto px-4 py-8 max-w-2xl">
+    <div class="mb-4">
+        <a href="/warga" class="text-green-600 hover:text-green-800">← Kembali ke Daftar Warga</a>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div class="bg-green-700 px-6 py-4">
+            <h1 class="text-xl font-bold text-white">Detail Warga</h1>
+        </div>
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <div class="text-sm text-gray-500">NIK</div>
+                    <div class="font-semibold text-gray-800">{{.Warga.NIK}}</div>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-500">Nama Lengkap</div>
+                    <div class="font-semibold text-gray-800">{{.Warga.NamaLengkap}}</div>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-500">Alamat</div>
+                    <div class="font-semibold text-gray-800">{{.Warga.Alamat}}</div>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-500">No HP</div>
+                    <div class="font-semibold text-gray-800">{{.Warga.NoHP}}</div>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-500">No Kartu Keluarga</div>
+                    <div class="font-semibold text-gray-800">{{.Warga.NoKK}}</div>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-500">RW</div>
+                    <div class="font-semibold text-gray-800">RW {{.Warga.RW}}</div>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-500">Terdaftar Sejak</div>
+                    <div class="font-semibold text-gray-800">{{.Warga.CreatedAt}}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{template "footer.html" .}}
+{{end}}
