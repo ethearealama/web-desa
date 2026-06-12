@@ -39,6 +39,12 @@ func main() {
 	template.Must(templates.ParseGlob("views/layouts/*.html"))
 	template.Must(templates.ParseGlob("views/admin/*.html")) // ← TAMBAHKAN BARIS INI
 
+	template.Must(templates.ParseGlob("views/layouts/*.html"))
+	template.Must(templates.ParseGlob("views/admin/*.html"))
+	template.Must(templates.ParseGlob("views/admin/wisata/*.html"))
+	template.Must(templates.ParseGlob("views/admin/datawarga/*.html"))
+	template.Must(templates.ParseGlob("views/admin/bansos/*.html"))
+
 	// Router
 	r := mux.NewRouter()
 
@@ -47,6 +53,7 @@ func main() {
 
 	// Routes Frontend
 	r.HandleFunc("/", homeHandler).Methods("GET")
+	r.HandleFunc("/admin", adminDashboardHandler).Methods("GET")
 	r.HandleFunc("/profil", profilHandler).Methods("GET")
 	r.HandleFunc("/berita", beritaHandler).Methods("GET")
 	r.HandleFunc("/berita/{id}", beritaDetailHandler).Methods("GET")
@@ -60,12 +67,18 @@ func main() {
 	r.HandleFunc("/surat/tracking", suratTrackingHandler).Methods("GET")
 	r.HandleFunc("/warga", wargaHandler).Methods("GET")
 	r.HandleFunc("/warga/{id}", wargaDetailHandler).Methods("GET")
+<<<<<<< HEAD
+	r.HandleFunc("/admin/wisata", adminWisataIndexHandler).Methods("GET")
+	r.HandleFunc("/admin/wisata/create", adminWisataCreateHandler).Methods("GET")
+	r.HandleFunc("/admin/wisata/edit/{id}", adminWisataEditHandler).Methods("GET")
+=======
 
 	// Routes Admin Login (HTML langsung, tanpa template)
 	r.HandleFunc("/login", loginHandler).Methods("GET")
 	r.HandleFunc("/login", doLoginHandler).Methods("POST")
 	r.HandleFunc("/admin/dashboard", adminDashboardHandler).Methods("GET")
 	r.HandleFunc("/logout", logoutHandler).Methods("GET")
+>>>>>>> 43d2777df590b50f866e9a1ef9e27286223190cd
 
 	fmt.Println("🌐 Server running on http://localhost:9090")
 	log.Fatal(http.ListenAndServe(":9090", r))
@@ -188,6 +201,36 @@ func wisataHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	templates.ExecuteTemplate(w, "wisata.html", data)
 }
+
+// ADMIN
+func adminDashboardHandler(w http.ResponseWriter, r *http.Request) {
+	templates.ExecuteTemplate(w, "admin/dashboard.html", nil)
+}
+
+func adminWisataCreateHandler(w http.ResponseWriter, r *http.Request) {
+	templates.ExecuteTemplate(w, "admin/create_wisata.html", nil)
+}
+
+func adminWargaCreateHandler(w http.ResponseWriter, r *http.Request) {
+	data := map[string]interface{}{
+		"Title": "Tambah Data Warga",
+	}
+
+	templates.ExecuteTemplate(
+		w,
+		"admin/warga/create.html",
+		data,
+	)
+}
+
+func adminWisataEditHandler(w http.ResponseWriter, r *http.Request) {
+	templates.ExecuteTemplate(w, "admin/wisata/edit.html", nil)
+}
+
+func adminWisataIndexHandler(w http.ResponseWriter, r *http.Request) {
+	templates.ExecuteTemplate(w, "admin/wisata/index.html", nil)
+}
+
 
 // ==================== PENGADUAN ====================
 func pengaduanHandler(w http.ResponseWriter, r *http.Request) {

@@ -1,3 +1,42 @@
+<<<<<<< HEAD
+{{define "dashboard.html"}}
+
+{{template "admin_header.html" .}}
+
+{{template "admin_sidebar.html" .}}
+
+<div class="main">
+
+    <div class="header">
+        <h1>Selamat Datang Admin</h1>
+        <p>Kelola seluruh data desa dari dashboard ini.</p>
+    </div>
+
+    <div class="cards">
+
+        <div class="card">
+            <h3>Total Warga</h3>
+            <h1>{{.TotalWarga}}</h1>
+        </div>
+
+        <div class="card">
+            <h3>Total Berita</h3>
+            <h1>{{.TotalBerita}}</h1>
+        </div>
+
+        <div class="card">
+            <h3>Pengaduan</h3>
+            <h1>{{.TotalPengaduan}}</h1>
+        </div>
+
+    </div>
+
+</div>
+
+{{template "footer.html" .}}
+
+{{end}}
+=======
 <!DOCTYPE html>
 <html>
 <head>
@@ -9,3 +48,4 @@
     <a href="/logout">Logout</a>
 </body>
 </html>
+>>>>>>> 43d2777df590b50f866e9a1ef9e27286223190cd
