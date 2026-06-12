@@ -39,7 +39,6 @@ func main() {
 	// Load semua template
 	templates = template.Must(template.New("").Funcs(funcMap).ParseGlob("views/*.html"))
 	template.Must(templates.ParseGlob("views/layouts/*.html"))
-	template.Must(templates.ParseGlob("views/admin/*.html"))
 
 	// Router
 	r := mux.NewRouter()
@@ -63,7 +62,7 @@ func main() {
 	r.HandleFunc("/warga", wargaHandler).Methods("GET")
 	r.HandleFunc("/warga/{id}", wargaDetailHandler).Methods("GET")
 
-	// Routes Admin Login
+	// Routes Admin Login (HTML langsung, tanpa template)
 	r.HandleFunc("/login", loginHandler).Methods("GET")
 	r.HandleFunc("/login", doLoginHandler).Methods("POST")
 	r.HandleFunc("/admin/dashboard", adminDashboardHandler).Methods("GET")
@@ -255,15 +254,15 @@ func suratTrackingHandler(w http.ResponseWriter, r *http.Request) {
 
 // ==================== WARGA ====================
 type Warga struct {
-    ID          int
-    NIK         string
-    NamaLengkap string
-    Alamat      string
-    NoHP        string
-    NoKK        string
-    RW          string
-    CreatedAt   time.Time
-    UpdatedAt   time.Time
+	ID          int
+	NIK         string
+	NamaLengkap string
+	Alamat      string
+	NoHP        string
+	NoKK        string
+	RW          string
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 func wargaHandler(w http.ResponseWriter, r *http.Request) {
@@ -276,9 +275,9 @@ func wargaHandler(w http.ResponseWriter, r *http.Request) {
 
 	var wargaList []Warga
 	for rows.Next() {
-		var w Warga
-		rows.Scan(&w.ID, &w.NIK, &w.NamaLengkap, &w.Alamat, &w.NoHP, &w.NoKK, &w.RW, &w.CreatedAt, &w.UpdatedAt)
-		wargaList = append(wargaList, w)
+		var wg Warga // ← ganti dari w menjadi wg
+		rows.Scan(&wg.ID, &wg.NIK, &wg.NamaLengkap, &wg.Alamat, &wg.NoHP, &wg.NoKK, &wg.RW, &wg.CreatedAt, &wg.UpdatedAt)
+		wargaList = append(wargaList, wg)
 	}
 
 	var totalKK, totalRW int
@@ -296,22 +295,69 @@ func wargaHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func wargaDetailHandler(w http.ResponseWriter, r *http.Request) {
-    vars := mux.Vars(r)
-    id := vars["id"]
+	vars := mux.Vars(r)
+	id, _ := strconv.Atoi(vars["id"])
 
-    var nama string
-    err := db.QueryRow("SELECT nama_lengkap FROM warga WHERE id = ?", id).Scan(&nama)
-    if err != nil {
-        http.NotFound(w, r)
-        return
-    }
+	var wg Warga // ← ganti dari w menjadi wg
+	query := "SELECT id, nik, nama_lengkap, alamat, no_hp, no_kk, rw, created_at, updated_at FROM warga WHERE id = ?"
+	err := db.QueryRow(query, id).Scan(
+		&wg.ID,
+		&wg.NIK,
+		&wg.NamaLengkap,
+		&wg.Alamat,
+		&wg.NoHP,
+		&wg.NoKK,
+		&wg.RW,
+		&wg.CreatedAt,
+		&wg.UpdatedAt,
+	)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
 
-    w.Write([]byte("Nama Warga: " + nama))
+	data := map[string]interface{}{
+		"Title": "Detail Warga",
+		"Warga": wg, // ← ganti dari w menjadi wg
+	}
+	templates.ExecuteTemplate(w, "warga_detail.html", data)
 }
-// ==================== LOGIN ADMIN ====================
+
+// ==================== LOGIN ADMIN (HTML LANGSUNG, TANPA TEMPLATE) ====================
 func loginHandler(w http.ResponseWriter, r *http.Request) {
-	data := map[string]interface{}{"error": r.URL.Query().Get("error")}
-	templates.ExecuteTemplate(w, "admin/login.html", data)
+	errorMsg := r.URL.Query().Get("error")
+	html := `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Login Admin</title>
+        <style>
+            body { font-family: Arial; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f0f2f5; }
+            .box { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); width: 350px; text-align: center; }
+            input { width: 100%; padding: 10px; margin: 5px 0 20px; border: 1px solid #ccc; border-radius: 5px; }
+            button { background: #2e7d32; color: white; padding: 10px; border: none; border-radius: 5px; width: 100%; cursor: pointer; }
+            button:hover { background: #1b5e20; }
+            .error { color: red; margin-bottom: 10px; }
+            h2 { color: #2e7d32; }
+        </style>
+    </head>
+    <body>
+        <div class="box">
+            <h2>Login Admin Desa</h2>
+            <form method="POST" action="/login">
+                <input type="email" name="email" placeholder="Email" required>
+                <input type="password" name="password" placeholder="Password" required>
+                <button type="submit">Login</button>
+            </form>
+        </div>
+    </body>
+    </html>
+    `
+	if errorMsg != "" {
+		html = `<div style="color:red; text-align:center; margin-bottom:10px;">` + errorMsg + `</div>` + html
+	}
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(html))
 }
 
 func doLoginHandler(w http.ResponseWriter, r *http.Request) {
@@ -327,8 +373,34 @@ func doLoginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func adminDashboardHandler(w http.ResponseWriter, r *http.Request) {
-	data := map[string]interface{}{"Title": "Dashboard Admin"}
-	templates.ExecuteTemplate(w, "admin/dashboard.html", data)
+	html := `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Dashboard Admin</title>
+        <style>
+            body { font-family: Arial; background: #f0f2f5; margin: 0; padding: 20px; }
+            .navbar { background: #2e7d32; color: white; padding: 15px; text-align: center; }
+            .container { max-width: 800px; margin: 20px auto; background: white; padding: 20px; border-radius: 10px; }
+            h1 { color: #2e7d32; }
+            .btn { background: #2e7d32; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 20px; }
+            .btn:hover { background: #1b5e20; }
+        </style>
+    </head>
+    <body>
+        <div class="navbar">
+            <h2>Admin Panel - Desa Sukaindah</h2>
+        </div>
+        <div class="container">
+            <h1>Selamat Datang, Admin!</h1>
+            <p>Ini adalah dashboard admin Desa Sukaindah.</p>
+            <a href="/logout" class="btn">Logout</a>
+        </div>
+    </body>
+    </html>
+    `
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(html))
 }
 
 func logoutHandler(w http.ResponseWriter, r *http.Request) {
