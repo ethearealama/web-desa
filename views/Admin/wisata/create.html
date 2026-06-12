@@ -49,12 +49,12 @@ body{ display:flex; background:#f4f6f9; }
 <div class="sidebar">
     <h2>Admin Desa</h2>
     <ul>
-        <li><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-        <li><a href="{{ route('warga.index') }}">Data Warga</a></li>
-        <li><a href="{{ route('berita.index') }}">Berita</a></li>
-        <li><a href="{{ route('wisata.index') }}">Wisata</a></li>
-        <li><a href="{{ route('pengaduan.index') }}">Pengaduan</a></li>
-        <li><a href="{{ route('bansos.index') }}">Bansos</a></li>
+        <li><a href="/admin">Dashboard</a></li>
+        <li><a href="/admin/warga">Data Warga</a></li>
+        <li><a href="/admin/berita">Berita</a></li>
+        <li><a href="/admin/wisata">Wisata</a></li>
+        <li><a href="/admin/pengaduan">Pengaduan</a></li>
+        <li><a href="/admin/bansos">Bansos</a></li>
     </ul>
 </div>
 
@@ -65,34 +65,41 @@ body{ display:flex; background:#f4f6f9; }
     </div>
 
     <div class="form-box">
-        <form action="{{ route('wisata.store') }}" method="POST" enctype="multipart/form-data">
-            @csrf
+        <form action="/admin/wisata" method="POST" enctype="multipart/form-data">
 
             <div class="form-group">
                 <label>Nama Tempat</label>
-                <input type="text" name="nama_tempat" class="form-control" placeholder="Contoh: Curug Indah" required>
+                <input type="text" name="nama_tempat" class="form-control"
+                    placeholder="Contoh: Curug Indah" required>
             </div>
 
             <div class="form-group">
                 <label>Lokasi</label>
-                <input type="text" name="lokasi" class="form-control" placeholder="Contoh: Dusun III, RT 02" required>
+                <input type="text" name="lokasi" class="form-control"
+                    placeholder="Contoh: Dusun III, RT 02" required>
             </div>
 
             <div class="form-group">
                 <label>Deskripsi Wisata</label>
-                <textarea name="deskripsi" class="form-control" rows="5" placeholder="Ceritakan keindahan tempat ini..." required></textarea>
+                <textarea name="deskripsi" class="form-control" rows="5"
+                        placeholder="Ceritakan keindahan tempat ini..." required></textarea>
             </div>
 
             <div class="form-group">
                 <label>Foto Wisata</label>
-                <input type="file" name="gambar" class="form-control" style="padding: 10px;">
-                <small style="color: #666;">Format: JPG, PNG, JPEG (Maks. 2MB)</small>
+                <input type="file" name="gambar" class="form-control" style="padding:10px;">
+                <small style="color:#666;">
+                    Format: JPG, PNG, JPEG (Maks. 2MB)
+                </small>
             </div>
 
-            <div style="margin-top: 30px;">
-                <a href="{{ route('wisata.index') }}" class="btn-back">Kembali</a>
-                <button type="submit" class="btn-save">Simpan Data Wisata</button>
+            <div style="margin-top:30px;">
+                <a href="/admin/wisata" class="btn-back">Kembali</a>
+                <button type="submit" class="btn-save">
+                    Simpan Data Wisata
+                </button>
             </div>
+
         </form>
     </div>
 </div>

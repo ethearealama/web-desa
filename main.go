@@ -24,6 +24,10 @@ func main() {
 	http.HandleFunc("/pengaduan", pengaduanHandler)
 	http.HandleFunc("/bansos", bansosHandler)
 	http.HandleFunc("/surat", suratHandler)
+	// Wisata admin
+	http.HandleFunc("/admin/wisata", adminWisataIndexHandler)
+	http.HandleFunc("/admin/wisata/create", adminWisataCreateHandler)
+	http.HandleFunc("/admin/wisata/edit", adminWisataEditHandler)
 
 	fmt.Println("Server running on http://localhost:8082")
 	http.ListenAndServe(":8082", nil)
@@ -54,6 +58,25 @@ func beritaHandler(w http.ResponseWriter, r *http.Request) {
 	templates.ExecuteTemplate(w, "berita.html", data)
 }
 
+// WISATA ADMIN
+func adminWisataIndexHandler(w http.ResponseWriter, r *http.Request) {
+    data := map[string]interface{}{
+        "Title": "Data Wisata",
+    }
+
+    templates.ExecuteTemplate(w, "index.html", data)
+}
+
+func adminWisataCreateHandler(w http.ResponseWriter, r *http.Request) {
+    data := map[string]interface{}{
+        "Title": "Tambah Wisata",
+    }
+
+    templates.ExecuteTemplate(w, "create.html", data)
+}
+
+
+// WISATA
 func wisataHandler(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{
 		"Title": "Wisata Desa",
