@@ -30,6 +30,12 @@ func main() {
 	templates = template.Must(template.New("").Funcs(funcMap).ParseGlob("views/*.html"))
 	template.Must(templates.ParseGlob("views/layouts/*.html"))
 
+	template.Must(templates.ParseGlob("views/layouts/*.html"))
+	template.Must(templates.ParseGlob("views/admin/*.html"))
+	template.Must(templates.ParseGlob("views/admin/wisata/*.html"))
+	template.Must(templates.ParseGlob("views/admin/datawarga/*.html"))
+	template.Must(templates.ParseGlob("views/admin/bansos/*.html"))
+
 	// Router
 	r := mux.NewRouter()
 
@@ -38,6 +44,7 @@ func main() {
 
 	// Routes
 	r.HandleFunc("/", homeHandler).Methods("GET")
+	r.HandleFunc("/admin", adminDashboardHandler).Methods("GET")
 	r.HandleFunc("/profil", profilHandler).Methods("GET")
 	r.HandleFunc("/berita", beritaHandler).Methods("GET")
 	r.HandleFunc("/berita/{id}", beritaDetailHandler).Methods("GET")
@@ -50,7 +57,9 @@ func main() {
 	r.HandleFunc("/surat/kirim", kirimSuratHandler).Methods("POST")
 	r.HandleFunc("/warga", wargaHandler).Methods("GET")
 	r.HandleFunc("/warga/{id}", wargaDetailHandler).Methods("GET")
+	r.HandleFunc("/admin/wisata", adminWisataIndexHandler).Methods("GET")
 	r.HandleFunc("/admin/wisata/create", adminWisataCreateHandler).Methods("GET")
+	r.HandleFunc("/admin/wisata/edit/{id}", adminWisataEditHandler).Methods("GET")
 
 	fmt.Println("🌐 Server running on http://localhost:9090")
 	log.Fatal(http.ListenAndServe(":9090", r))
@@ -175,8 +184,32 @@ func wisataHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // ADMIN
+func adminDashboardHandler(w http.ResponseWriter, r *http.Request) {
+	templates.ExecuteTemplate(w, "dashboard.html", nil)
+}
+
 func adminWisataCreateHandler(w http.ResponseWriter, r *http.Request) {
 	templates.ExecuteTemplate(w, "admin/create_wisata.html", nil)
+}
+
+func adminWargaCreateHandler(w http.ResponseWriter, r *http.Request) {
+	data := map[string]interface{}{
+		"Title": "Tambah Data Warga",
+	}
+
+	templates.ExecuteTemplate(
+		w,
+		"Admin/warga/create.html",
+		data,
+	)
+}
+
+func adminWisataEditHandler(w http.ResponseWriter, r *http.Request) {
+	templates.ExecuteTemplate(w, "admin/wisata/edit.html", nil)
+}
+
+func adminWisataIndexHandler(w http.ResponseWriter, r *http.Request) {
+	templates.ExecuteTemplate(w, "index.html", nil)
 }
 
 // ==================== PENGADUAN ====================
