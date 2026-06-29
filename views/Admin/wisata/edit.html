@@ -1,13 +1,6 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Edit Wisata</title>
+{{define "admin/wisata/edit"}}
 
-<style>
-*{ margin:0; padding:0; box-sizing:border-box; font-family:Arial, sans-serif; }
-body{ display:flex; background:#f4f6f9; }
+{{template "admin_header.html" .}}
 
 /* Sidebar */
 .sidebar{ width:250px; height:100vh; background:#198754; color:white; padding:20px; position:fixed; }
@@ -109,5 +102,6 @@ body{ display:flex; background:#f4f6f9; }
     </div>
 </div>
 
-</body>
-</html>
+{{template "footer.html" .}}
+
+{{end}}

@@ -1,84 +1,46 @@
-{{define "index_wisata.html"}}
+{{define "admin/wisata/index"}}
 
 {{template "admin_header.html" .}}
+
 {{template "admin_sidebar.html" .}}
 
 <div class="main">
-
     <div class="header">
-        <h1>Data Wisata Desa</h1>
-        <p>Kelola data objek wisata desa di halaman ini.</p>
+        <h1>Kelola Wisata</h1>
+        <a href="{{ route "admin.wisata.create" }}" class="btn btn-primary">Tambah Wisata</a>
     </div>
 
-    <a href="/admin/wisata/create" class="btn">+ Tambah Wisata</a>
-
-    <div class="table-box">
-
-        <table>
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>Gambar</th>
-                    <th>Nama Tempat</th>
-                    <th>Lokasi</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-
-            <tbody>
-
-            {{range $i, $item := .WisataList}}
-
-                <tr>
-                    <td>{{$i}}</td>
-
-                    <td>
-                        {{if $item.Gambar}}
-                            <img src="/static/uploads/{{$item.Gambar}}" width="80" height="60">
-                        {{else}}
-                            <span style="color:#999;">No Image</span>
-                        {{end}}
-                    </td>
-
-                    <td>{{$item.NamaWisata}}</td>
-
-                    <td>{{$item.Lokasi}}</td>
-
-                    <td>
-
-                        <a href="/admin/wisata/edit/{{$item.ID}}" class="action-btn edit">
-                            Edit
-                        </a>
-
-                        <form action="/admin/wisata/delete/{{$item.ID}}" method="POST"
-                              onsubmit="return confirm('Yakin hapus data ini?')">
-
-                            <button type="submit" class="action-btn hapus">
-                                Hapus
-                            </button>
-
-                        </form>
-
-                    </td>
-
-                </tr>
-
+    <table class="table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Nama</th>
+                <th>Lokasi</th>
+                <th>Harga</th>
+                <th>Status</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{range $index, $w := .WisataList}}
+            <tr>
+                <td>{{add $index 1}}</td>
+                <td>{{$w.NamaWisata}}</td>
+                <td>{{$w.Lokasi}}</td>
+                <td>{{$w.HargaTiket}}</td>
+                <td>{{$w.Status}}</td>
+                <td>
+                    <a href="{{ route "admin.wisata.edit" $w.ID }}">Edit</a>
+                    <a href="{{ route "admin.wisata.delete" $w.ID }}" onclick="return confirm('Yakin hapus?')">Hapus</a>
+                </td>
+            </tr>
             {{else}}
-
-                <tr>
-                    <td colspan="5" style="text-align:center;">
-                        Belum ada data wisata.
-                    </td>
-                </tr>
-
+            <tr><td colspan="6">Belum ada data wisata.</td></tr>
             {{end}}
-
-            </tbody>
-
-        </table>
-
-    </div>
-
+        </tbody>
+    </table>
 </div>
+
+{{template "footer.html" .}}
 
 {{end}}
