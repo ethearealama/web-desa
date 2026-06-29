@@ -19,7 +19,7 @@ var templates *template.Template
 func main() {
 	// Koneksi database
 	var err error
-	dsn := "root:2112410713@tcp(localhost:3306)/dbdesa?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := "root:@tcp(localhost:3306)/dbdesa?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err = sql.Open("mysql", dsn)
 	if err != nil {
 		log.Fatal("Gagal konek database:", err)
@@ -37,7 +37,7 @@ func main() {
 
 	templates = template.Must(template.New("").Funcs(funcMap).ParseGlob("views/*.html"))
 	template.Must(templates.ParseGlob("views/layouts/*.html"))
-	template.Must(templates.ParseGlob("views/admin/*.html"))
+	template.Must(templates.ParseGlob("views/admin/dashboard/*.html"))
 	template.Must(templates.ParseGlob("views/admin/wisata/*.html"))
 	template.Must(templates.ParseGlob("views/admin/datawarga/*.html"))
 	template.Must(templates.ParseGlob("views/admin/bansos/*.html"))
@@ -408,7 +408,7 @@ func adminDashboardHandler(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{
 		"Title": "Dashboard Admin",
 	}
-	err := templates.ExecuteTemplate(w, "admin/dashboard.html", data)
+	err := templates.ExecuteTemplate(w, "dashboard.html", data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

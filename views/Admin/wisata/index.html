@@ -1,167 +1,7 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Data Wisata</title>
+{{define "index_wisata.html"}}
 
-<style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Arial, sans-serif;
-}
-
-body{
-    display:flex;
-    background:#f4f6f9;
-}
-
-/* Sidebar */
-.sidebar{
-    width:250px;
-    height:100vh;
-    background:#198754;
-    color:white;
-    padding:20px;
-    position:fixed;
-}
-
-.sidebar h2{
-    text-align:center;
-    margin-bottom:30px;
-}
-
-.sidebar ul{
-    list-style:none;
-}
-
-.sidebar ul li{
-    margin:10px 0;
-}
-
-.sidebar ul li a{
-    display:block;
-    padding:14px;
-    color:white;
-    text-decoration:none;
-    background:rgba(255,255,255,0.1);
-    border-radius:8px;
-    transition:0.3s;
-}
-
-.sidebar ul li a:hover{
-    background:white;
-    color:#198754;
-}
-
-/* Main */
-.main{
-    margin-left:250px;
-    padding:30px;
-    width:100%;
-}
-
-.header{
-    background:white;
-    padding:20px;
-    border-radius:12px;
-    box-shadow:0 2px 8px rgba(0,0,0,0.08);
-    margin-bottom:25px;
-}
-
-.header h1{
-    color:#198754;
-}
-
-/* Button */
-.btn{
-    display:inline-block;
-    padding:10px 16px;
-    background:#198754;
-    color:white;
-    text-decoration:none;
-    border-radius:8px;
-    margin-bottom:20px;
-    transition:0.3s;
-}
-
-.btn:hover{
-    background:#146c43;
-}
-
-/* Table */
-.table-box{
-    background:white;
-    padding:20px;
-    border-radius:12px;
-    box-shadow:0 2px 10px rgba(0,0,0,0.08);
-}
-
-table{
-    width:100%;
-    border-collapse:collapse;
-}
-
-table th{
-    background:#198754;
-    color:white;
-    padding:12px;
-    text-align: left;
-}
-
-table td{
-    padding:12px;
-    border-bottom:1px solid #ddd;
-}
-
-table tr:hover{
-    background:#f8f8f8;
-}
-
-.action-btn{
-    padding:7px 12px;
-    border:none;
-    border-radius:6px;
-    cursor:pointer;
-    text-decoration:none;
-    color:white;
-    font-size:14px;
-}
-
-.edit{
-    background:#0d6efd;
-}
-
-.hapus{
-    background:#dc3545;
-}
-
-form{
-    display:inline;
-}
-
-img {
-    border-radius: 8px;
-    object-fit: cover;
-}
-</style>
-</head>
-<body>
-
-<div class="sidebar">
-    <h2>Admin Desa</h2>
-
-    <ul>
-        <li><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-        <li><a href="{{ route('admin.warga.index') }}">Data Warga</a></li>
-        <li><a href="{{ route('admin.berita.index') }}">Berita</a></li>
-        <li><a href="{{ route('admin.wisata.index') }}">Wisata</a></li>
-        <li><a href="{{ route('admin.pengaduan.index') }}">Pengaduan</a></li>
-        <li><a href="{{ route('admin.bansos.index') }}">Bansos</a></li>
-    </ul>
-</div>
+{{template "admin_header.html" .}}
+{{template "admin_sidebar.html" .}}
 
 <div class="main">
 
@@ -170,7 +10,7 @@ img {
         <p>Kelola data objek wisata desa di halaman ini.</p>
     </div>
 
-    <a href="{{ route('admin.wisata.create') }}" class="btn">+ Tambah Wisata</a>
+    <a href="/admin/wisata/create" class="btn">+ Tambah Wisata</a>
 
     <div class="table-box">
 
@@ -184,36 +24,61 @@ img {
                     <th>Aksi</th>
                 </tr>
             </thead>
-            <tbody>
-                @foreach($wisata as $item)
-                <tr>
-                    <td>{{ $loop->iteration }}</td>
-                    <td>
-                        @if($item->gambar)
-                            <img src="{{ asset('storage/'.$item->gambar) }}" width="80" height="60">
-                        @else
-                            <span style="color: #ccc;">No Image</span>
-                        @endif
-                    </td>
-                    <td>{{ $item->nama_wisata }}</td>
-                    <td>{{ $item->lokasi }}</td>
-                    <td>
-                        <a href="{{ route('admin.wisata.edit', $item->id) }}" class="action-btn edit">Edit</a>
 
-                        <form action="{{ route('admin.wisata.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Yakin hapus data ini?')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="action-btn hapus">Hapus</a>
+            <tbody>
+
+            {{range $i, $item := .WisataList}}
+
+                <tr>
+                    <td>{{$i}}</td>
+
+                    <td>
+                        {{if $item.Gambar}}
+                            <img src="/static/uploads/{{$item.Gambar}}" width="80" height="60">
+                        {{else}}
+                            <span style="color:#999;">No Image</span>
+                        {{end}}
+                    </td>
+
+                    <td>{{$item.NamaWisata}}</td>
+
+                    <td>{{$item.Lokasi}}</td>
+
+                    <td>
+
+                        <a href="/admin/wisata/edit/{{$item.ID}}" class="action-btn edit">
+                            Edit
+                        </a>
+
+                        <form action="/admin/wisata/delete/{{$item.ID}}" method="POST"
+                              onsubmit="return confirm('Yakin hapus data ini?')">
+
+                            <button type="submit" class="action-btn hapus">
+                                Hapus
+                            </button>
+
                         </form>
+
+                    </td>
+
+                </tr>
+
+            {{else}}
+
+                <tr>
+                    <td colspan="5" style="text-align:center;">
+                        Belum ada data wisata.
                     </td>
                 </tr>
-                @endforeach
+
+            {{end}}
+
             </tbody>
+
         </table>
 
     </div>
 
 </div>
 
-</body>
-</html>
+{{end}}

@@ -56,55 +56,53 @@ body{ display:flex; background:#f4f6f9; }
 <div class="sidebar">
     <h2>Admin Desa</h2>
     <ul>
-        <li><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-        <li><a href="{{ route('warga.index') }}">Data Warga</a></li>
-        <li><a href="{{ route('berita.index') }}">Berita</a></li>
-        <li><a href="{{ route('wisata.index') }}">Wisata</a></li>
-        <li><a href="{{ route('pengaduan.index') }}">Pengaduan</a></li>
-        <li><a href="{{ route('bansos.index') }}">Bansos</a></li>
+        <a href="/admin">Dashboard</a>
+        <a href="/admin/warga">Data Warga</a>
+        <a href="/admin/berita">Berita</a>
+        <a href="/admin/wisata">Wisata</a>
+        <a href="/admin/pengaduan">Pengaduan</a>
+        <a href="/admin/bansos">Bansos</a>
     </ul>
 </div>
 
 <div class="main">
     <div class="header">
         <h1>Edit Wisata</h1>
-        <p>Perbarui informasi objek wisata <strong>{{ $wisata->nama_tempat }}</strong></p>
+        <p>Perbarui informasi objek wisata <strong>{{.Wisata.NamaTempat }}</strong></p>
     </div>
 
     <div class="form-box">
-        <form action="{{ route('wisata.update', $wisata->id) }}" method="POST" enctype="multipart/form-data">
-            @csrf
-            @method('PUT')
+        <form action="/admin/wisata/update/{{.Wisata.ID}}" method="POST" enctype="multipart/form-data">
 
             <div class="form-group">
                 <label>Nama Tempat</label>
-                <input type="text" name="nama_tempat" class="form-control" value="{{ $wisata->nama_tempat }}" required>
+                <input type="text" name="nama_tempat" class="form-control" value="{{.Wisata.NamaTempat}}" required>
             </div>
 
             <div class="form-group">
                 <label>Lokasi</label>
-                <input type="text" name="lokasi" class="form-control" value="{{ $wisata->lokasi }}" required>
+                <input type="text" name="lokasi" class="form-control" value="{{.Wisata.NamaTempat}}" required>
             </div>
 
             <div class="form-group">
                 <label>Deskripsi Wisata</label>
-                <textarea name="deskripsi" class="form-control" rows="5" required>{{ $wisata->deskripsi }}</textarea>
+                <textarea name="deskripsi" class="form-control" rows="5" required>{{.Wisata.Deskripsi}}</textarea>
             </div>
 
             <div class="form-group">
                 <label>Gambar Saat Ini</label>
-                @if($wisata->gambar)
-                    <img src="{{ asset('storage/'.$wisata->gambar) }}" width="150" class="current-img">
-                @else
+                {{if .Wisata.Gambar}}
+                    <img src="/static/uploads/{{.Wisata.Gambar}}" width="150" class="current-img">
+                {{else}}
                     <p style="color: #999; font-style: italic; margin-bottom: 10px;">Belum ada gambar.</p>
-                @endif
+                {{end}}
                 
                 <label>Ganti Gambar (Kosongkan jika tidak ingin mengubah)</label>
                 <input type="file" name="gambar" class="form-control" style="padding: 10px;">
             </div>
 
             <div style="margin-top: 30px;">
-                <a href="{{ route('wisata.index') }}" class="btn-back">Batal</a>
+                <a href="/admin/wisata"></a> class="btn-back">Batal</a>
                 <button type="submit" class="btn-update">Update Data Wisata</button>
             </div>
         </form>
