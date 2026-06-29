@@ -40,7 +40,6 @@ func main() {
 	templates = template.Must(template.New("").Funcs(funcMap).ParseGlob("views/*.html"))
 	template.Must(templates.ParseGlob("views/layouts/*.html"))
 
-	template.Must(templates.ParseGlob("views/layouts/*.html"))
 	template.Must(templates.ParseGlob("views/admin/*.html"))
 	template.Must(templates.ParseGlob("views/admin/wisata/*.html"))
 	template.Must(templates.ParseGlob("views/admin/datawarga/*.html"))
@@ -54,7 +53,6 @@ func main() {
 
 	// Routes Frontend
 	r.HandleFunc("/", homeHandler).Methods("GET")
-	r.HandleFunc("/admin", adminDashboardHandler).Methods("GET")
 	r.HandleFunc("/profil", profilHandler).Methods("GET")
 	r.HandleFunc("/berita", beritaHandler).Methods("GET")
 	r.HandleFunc("/berita/{id}", beritaDetailHandler).Methods("GET")
@@ -68,18 +66,15 @@ func main() {
 	r.HandleFunc("/surat/tracking", suratTrackingHandler).Methods("GET")
 	r.HandleFunc("/warga", wargaHandler).Methods("GET")
 	r.HandleFunc("/warga/{id}", wargaDetailHandler).Methods("GET")
-<<<<<<< HEAD
 	r.HandleFunc("/admin/wisata", adminWisataIndexHandler).Methods("GET")
 	r.HandleFunc("/admin/wisata/create", adminWisataCreateHandler).Methods("GET")
 	r.HandleFunc("/admin/wisata/edit/{id}", adminWisataEditHandler).Methods("GET")
-=======
 
 	// Routes Admin Login (HTML langsung, tanpa template)
 	r.HandleFunc("/login", loginHandler).Methods("GET")
 	r.HandleFunc("/login", doLoginHandler).Methods("POST")
 	r.HandleFunc("/admin/dashboard", adminDashboardHandler).Methods("GET")
 	r.HandleFunc("/logout", logoutHandler).Methods("GET")
->>>>>>> 43d2777df590b50f866e9a1ef9e27286223190cd
 
 	fmt.Println("🌐 Server running on http://localhost:9090")
 	log.Fatal(http.ListenAndServe(":9090", r))
@@ -192,12 +187,9 @@ func wisataHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // ADMIN
-func adminDashboardHandler(w http.ResponseWriter, r *http.Request) {
-	templates.ExecuteTemplate(w, "admin/dashboard.html", nil)
-}
 
 func adminWisataCreateHandler(w http.ResponseWriter, r *http.Request) {
-	templates.ExecuteTemplate(w, "admin/create_wisata.html", nil)
+	templates.ExecuteTemplate(w, "admin/wisata/create_wisata.html", nil)
 }
 
 func adminWargaCreateHandler(w http.ResponseWriter, r *http.Request) {
@@ -219,7 +211,6 @@ func adminWisataEditHandler(w http.ResponseWriter, r *http.Request) {
 func adminWisataIndexHandler(w http.ResponseWriter, r *http.Request) {
 	templates.ExecuteTemplate(w, "admin/wisata/index.html", nil)
 }
-
 
 // ==================== PENGADUAN ====================
 func pengaduanHandler(w http.ResponseWriter, r *http.Request) {
@@ -416,34 +407,7 @@ func doLoginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func adminDashboardHandler(w http.ResponseWriter, r *http.Request) {
-	html := `
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Dashboard Admin</title>
-        <style>
-            body { font-family: Arial; background: #f0f2f5; margin: 0; padding: 20px; }
-            .navbar { background: #2e7d32; color: white; padding: 15px; text-align: center; }
-            .container { max-width: 800px; margin: 20px auto; background: white; padding: 20px; border-radius: 10px; }
-            h1 { color: #2e7d32; }
-            .btn { background: #2e7d32; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 20px; }
-            .btn:hover { background: #1b5e20; }
-        </style>
-    </head>
-    <body>
-        <div class="navbar">
-            <h2>Admin Panel - Desa Sukaindah</h2>
-        </div>
-        <div class="container">
-            <h1>Selamat Datang, Admin!</h1>
-            <p>Ini adalah dashboard admin Desa Sukaindah.</p>
-            <a href="/logout" class="btn">Logout</a>
-        </div>
-    </body>
-    </html>
-    `
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(html))
+	templates.ExecuteTemplate(w, "admin/dashboard.html", nil)
 }
 
 func logoutHandler(w http.ResponseWriter, r *http.Request) {
