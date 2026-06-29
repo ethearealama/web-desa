@@ -19,7 +19,7 @@ var templates *template.Template
 func main() {
 	// Koneksi database
 	var err error
-	dsn := "root:@tcp(127.0.0.1:3306)/dbdesa?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := "root:2112410713@tcp(localhost:3306)/dbdesa?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err = sql.Open("mysql", dsn)
 	if err != nil {
 		log.Fatal("Gagal konek database:", err)
@@ -36,9 +36,6 @@ func main() {
 	}
 
 	templates = template.Must(template.New("").Funcs(funcMap).ParseGlob("views/*.html"))
-	template.Must(templates.ParseGlob("views/layouts/*.html"))
-	template.Must(templates.ParseGlob("views/admin/*.html")) // ← TAMBAHKAN BARIS INI
-
 	template.Must(templates.ParseGlob("views/layouts/*.html"))
 	template.Must(templates.ParseGlob("views/admin/*.html"))
 	template.Must(templates.ParseGlob("views/admin/wisata/*.html"))
@@ -67,18 +64,17 @@ func main() {
 	r.HandleFunc("/surat/tracking", suratTrackingHandler).Methods("GET")
 	r.HandleFunc("/warga", wargaHandler).Methods("GET")
 	r.HandleFunc("/warga/{id}", wargaDetailHandler).Methods("GET")
-<<<<<<< HEAD
+
+	// Routes Admin Wisata
 	r.HandleFunc("/admin/wisata", adminWisataIndexHandler).Methods("GET")
 	r.HandleFunc("/admin/wisata/create", adminWisataCreateHandler).Methods("GET")
 	r.HandleFunc("/admin/wisata/edit/{id}", adminWisataEditHandler).Methods("GET")
-=======
 
-	// Routes Admin Login (HTML langsung, tanpa template)
+	// Routes Admin Login & Dashboard
 	r.HandleFunc("/login", loginHandler).Methods("GET")
 	r.HandleFunc("/login", doLoginHandler).Methods("POST")
 	r.HandleFunc("/admin/dashboard", adminDashboardHandler).Methods("GET")
 	r.HandleFunc("/logout", logoutHandler).Methods("GET")
->>>>>>> 43d2777df590b50f866e9a1ef9e27286223190cd
 
 	fmt.Println("🌐 Server running on http://localhost:9090")
 	log.Fatal(http.ListenAndServe(":9090", r))
@@ -86,22 +82,21 @@ func main() {
 
 // ==================== HOME ====================
 func homeHandler(w http.ResponseWriter, r *http.Request) {
-    var totalPenduduk, totalKK, totalRW, totalWisata int
+	var totalPenduduk, totalKK, totalRW, totalWisata int
 
-    // Ambil dari database
-    db.QueryRow("SELECT COUNT(*) FROM warga").Scan(&totalPenduduk)
-    db.QueryRow("SELECT COUNT(DISTINCT no_kk) FROM warga WHERE no_kk IS NOT NULL AND no_kk != ''").Scan(&totalKK)
-    db.QueryRow("SELECT COUNT(DISTINCT rw) FROM warga WHERE rw IS NOT NULL AND rw != ''").Scan(&totalRW)
-    db.QueryRow("SELECT COUNT(*) FROM wisatas").Scan(&totalWisata)
+	db.QueryRow("SELECT COUNT(*) FROM warga").Scan(&totalPenduduk)
+	db.QueryRow("SELECT COUNT(DISTINCT no_kk) FROM warga WHERE no_kk IS NOT NULL AND no_kk != ''").Scan(&totalKK)
+	db.QueryRow("SELECT COUNT(DISTINCT rw) FROM warga WHERE rw IS NOT NULL AND rw != ''").Scan(&totalRW)
+	db.QueryRow("SELECT COUNT(*) FROM wisatas").Scan(&totalWisata)
 
-    data := map[string]interface{}{
-        "Title":         "Beranda",
-        "TotalPenduduk": totalPenduduk,
-        "TotalKK":       totalKK,
-        "TotalRW":       totalRW,
-        "TotalWisata":   totalWisata,
-    }
-    templates.ExecuteTemplate(w, "index.html", data)
+	data := map[string]interface{}{
+		"Title":         "Beranda",
+		"TotalPenduduk": totalPenduduk,
+		"TotalKK":       totalKK,
+		"TotalRW":       totalRW,
+		"TotalWisata":   totalWisata,
+	}
+	templates.ExecuteTemplate(w, "index.html", data)
 }
 
 func profilHandler(w http.ResponseWriter, r *http.Request) {
@@ -202,35 +197,18 @@ func wisataHandler(w http.ResponseWriter, r *http.Request) {
 	templates.ExecuteTemplate(w, "wisata.html", data)
 }
 
-// ADMIN
-func adminDashboardHandler(w http.ResponseWriter, r *http.Request) {
-	templates.ExecuteTemplate(w, "admin/dashboard.html", nil)
+// ==================== ADMIN WISATA ====================
+func adminWisataIndexHandler(w http.ResponseWriter, r *http.Request) {
+	templates.ExecuteTemplate(w, "admin/wisata/index.html", nil)
 }
 
 func adminWisataCreateHandler(w http.ResponseWriter, r *http.Request) {
-	templates.ExecuteTemplate(w, "admin/create_wisata.html", nil)
-}
-
-func adminWargaCreateHandler(w http.ResponseWriter, r *http.Request) {
-	data := map[string]interface{}{
-		"Title": "Tambah Data Warga",
-	}
-
-	templates.ExecuteTemplate(
-		w,
-		"admin/warga/create.html",
-		data,
-	)
+	templates.ExecuteTemplate(w, "admin/wisata/create.html", nil)
 }
 
 func adminWisataEditHandler(w http.ResponseWriter, r *http.Request) {
 	templates.ExecuteTemplate(w, "admin/wisata/edit.html", nil)
 }
-
-func adminWisataIndexHandler(w http.ResponseWriter, r *http.Request) {
-	templates.ExecuteTemplate(w, "admin/wisata/index.html", nil)
-}
-
 
 // ==================== PENGADUAN ====================
 func pengaduanHandler(w http.ResponseWriter, r *http.Request) {
@@ -329,7 +307,7 @@ func wargaHandler(w http.ResponseWriter, r *http.Request) {
 
 	var wargaList []Warga
 	for rows.Next() {
-		var wg Warga // ← ganti dari w menjadi wg
+		var wg Warga
 		rows.Scan(&wg.ID, &wg.NIK, &wg.NamaLengkap, &wg.Alamat, &wg.NoHP, &wg.NoKK, &wg.RW, &wg.CreatedAt, &wg.UpdatedAt)
 		wargaList = append(wargaList, wg)
 	}
@@ -352,7 +330,7 @@ func wargaDetailHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, _ := strconv.Atoi(vars["id"])
 
-	var wg Warga // ← ganti dari w menjadi wg
+	var wg Warga
 	query := "SELECT id, nik, nama_lengkap, alamat, no_hp, no_kk, rw, created_at, updated_at FROM warga WHERE id = ?"
 	err := db.QueryRow(query, id).Scan(
 		&wg.ID,
@@ -372,12 +350,12 @@ func wargaDetailHandler(w http.ResponseWriter, r *http.Request) {
 
 	data := map[string]interface{}{
 		"Title": "Detail Warga",
-		"Warga": wg, // ← ganti dari w menjadi wg
+		"Warga": wg,
 	}
 	templates.ExecuteTemplate(w, "warga_detail.html", data)
 }
 
-// ==================== LOGIN ADMIN (HTML LANGSUNG, TANPA TEMPLATE) ====================
+// ==================== LOGIN ADMIN ====================
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	errorMsg := r.URL.Query().Get("error")
 	html := `
