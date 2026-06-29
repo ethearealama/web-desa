@@ -12,67 +12,105 @@
 
 <div class="flex min-h-screen">
     {{template "admin_sidebar.html" .}}
+/* Sidebar */
+.sidebar{ width:250px; height:100vh; background:#198754; color:white; padding:20px; position:fixed; }
+.sidebar h2{ text-align:center; margin-bottom:30px; }
+.sidebar ul{ list-style:none; }
+.sidebar ul li{ margin:10px 0; }
+.sidebar ul li a{ display:block; padding:14px; color:white; text-decoration:none; background:rgba(255,255,255,0.1); border-radius:8px; transition:0.3s; }
+.sidebar ul li a:hover{ background:white; color:#198754; }
 
-    <div class="ml-64 flex-1">
-        {{template "admin_header.html" .}}
+/* Main */
+.main{ margin-left:250px; padding:30px; width:100%; }
+.header{ background:white; padding:20px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin-bottom:25px; }
+.header h1{ color:#198754; }
 
-        <div class="p-6 max-w-2xl">
-            <div class="flex items-center gap-4 mb-6">
-                <a href="/admin/wisata" class="text-green-600 hover:text-green-800">
-                    <i class="fas fa-arrow-left"></i> Kembali
-                </a>
-                <h2 class="text-2xl font-bold text-green-800">Edit Wisata</h2>
-            </div>
+/* Form Box */
+.form-box{ background:white; padding:30px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.08); max-width: 800px; }
+.form-group{ margin-bottom: 20px; }
+.form-group label{ display: block; margin-bottom: 8px; font-weight: bold; color: #333; }
+.form-control{ 
+    width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; 
+    font-size: 15px; outline: none; transition: 0.3s; 
+}
+.form-control:focus{ border-color: #198754; box-shadow: 0 0 5px rgba(25, 135, 84, 0.2); }
 
-            <div class="bg-white rounded-xl shadow-md p-6">
-                <form method="POST" action="/admin/wisata/update/{{.Wisata.ID}}" enctype="multipart/form-data">
-                    <div class="mb-4">
-                        <label class="block text-gray-700 font-semibold mb-2">Nama Wisata <span class="text-red-500">*</span></label>
-                        <input type="text" name="nama_wisata" value="{{.Wisata.NamaWisata}}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500" required>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 font-semibold mb-2">Deskripsi <span class="text-red-500">*</span></label>
-                        <textarea name="deskripsi" rows="4" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500" required>{{.Wisata.Deskripsi}}</textarea>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 font-semibold mb-2">Lokasi <span class="text-red-500">*</span></label>
-                        <input type="text" name="lokasi" value="{{.Wisata.Lokasi}}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500" required>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label class="block text-gray-700 font-semibold mb-2">Harga Tiket</label>
-                            <input type="text" name="harga_tiket" value="{{.Wisata.HargaTiket}}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
-                        </div>
-                        <div>
-                            <label class="block text-gray-700 font-semibold mb-2">Jam Operasional</label>
-                            <input type="text" name="jam_operasional" value="{{.Wisata.JamOperasional}}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
-                        </div>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 font-semibold mb-2">Status</label>
-                        <select name="status" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
-                            <option value="buka" {{if eq .Wisata.Status "buka"}}selected{{end}}>Buka</option>
-                            <option value="tutup" {{if eq .Wisata.Status "tutup"}}selected{{end}}>Tutup</option>
-                        </select>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 font-semibold mb-2">Gambar Saat Ini</label>
-                        {{if .Wisata.Gambar}}
-                            <img src="/static/uploads/wisata/{{.Wisata.Gambar}}" class="h-24 w-auto rounded mb-2">
-                        {{else}}
-                            <p class="text-gray-400 text-sm">Belum ada gambar</p>
-                        {{end}}
-                        <input type="file" name="gambar" accept="image/*" class="w-full border border-gray-300 rounded-lg px-4 py-2 mt-2">
-                        <p class="text-xs text-gray-400 mt-1">Kosongkan jika tidak ingin mengganti gambar</p>
-                    </div>
-                    <div class="flex gap-3">
-                        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition">Update</button>
-                        <a href="/admin/wisata" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition">Batal</a>
-                    </div>
-                </form>
-            </div>
-        </div>
+/* Button */
+.btn-update{ 
+    background:#198754; color:white; border:none; padding:12px 25px; 
+    border-radius:8px; cursor:pointer; font-size: 16px; font-weight: bold; transition:0.3s; 
+}
+.btn-update:hover{ background:#146c43; }
+.btn-back{ 
+    display: inline-block; background:#6c757d; color:white; text-decoration:none; 
+    padding:12px 25px; border-radius:8px; margin-right: 10px; font-size: 16px; 
+}
+
+.current-img {
+    margin-bottom: 10px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    display: block;
+}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h2>Admin Desa</h2>
+    <ul>
+        <a href="/admin">Dashboard</a>
+        <a href="/admin/warga">Data Warga</a>
+        <a href="/admin/berita">Berita</a>
+        <a href="/admin/wisata">Wisata</a>
+        <a href="/admin/pengaduan">Pengaduan</a>
+        <a href="/admin/bansos">Bansos</a>
+    </ul>
+</div>
+
+<div class="main">
+    <div class="header">
+        <h1>Edit Wisata</h1>
+        <p>Perbarui informasi objek wisata <strong>{{.Wisata.NamaTempat }}</strong></p>
     </div>
+
+    <div class="form-box">
+        <form action="/admin/wisata/update/{{.Wisata.ID}}" method="POST" enctype="multipart/form-data">
+
+            <div class="form-group">
+                <label>Nama Tempat</label>
+                <input type="text" name="nama_tempat" class="form-control" value="{{.Wisata.NamaTempat}}" required>
+            </div>
+
+            <div class="form-group">
+                <label>Lokasi</label>
+                <input type="text" name="lokasi" class="form-control" value="{{.Wisata.NamaTempat}}" required>
+            </div>
+
+            <div class="form-group">
+                <label>Deskripsi Wisata</label>
+                <textarea name="deskripsi" class="form-control" rows="5" required>{{.Wisata.Deskripsi}}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Gambar Saat Ini</label>
+                {{if .Wisata.Gambar}}
+                    <img src="/static/uploads/{{.Wisata.Gambar}}" width="150" class="current-img">
+                {{else}}
+                    <p style="color: #999; font-style: italic; margin-bottom: 10px;">Belum ada gambar.</p>
+                {{end}}
+                
+                <label>Ganti Gambar (Kosongkan jika tidak ingin mengubah)</label>
+                <input type="file" name="gambar" class="form-control" style="padding: 10px;">
+            </div>
+
+            <div style="margin-top: 30px;">
+                <a href="/admin/wisata"></a> class="btn-back">Batal</a>
+                <button type="submit" class="btn-update">Update Data Wisata</button>
+            </div>
+        </form>
+    </div>
+>>>>>>> 4a7c617d8491322f91cb76691b70156f0196a3a6
 </div>
 
 </body>
