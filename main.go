@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"html/template"
 	"log"
@@ -9,30 +8,53 @@ import (
 	"strconv"
 	"time"
 
+	"go-desa/config" // sesuaikan dengan nama module Anda
+
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 )
 
-var db *sql.DB
 var templates *template.Template
 
 func main() {
-	// Koneksi database
-	var err error
-	dsn := "root:2112410713@tcp(localhost:3306)/dbdesa?charset=utf8mb4&parseTime=True&loc=Local"
-	db, err = sql.Open("mysql", dsn)
-	if err != nil {
-		log.Fatal("Gagal konek database:", err)
-	}
-	err = db.Ping()
-	if err != nil {
-		log.Fatal("Database tidak merespon:", err)
-	}
+	// Koneksi database dari package config
+	config.ConnectDB()
+	defer config.DB.Close()
 
 	// Template functions
 	funcMap := template.FuncMap{
 		"add":        func(a, b int) int { return a + b },
 		"formatDate": func(t time.Time) string { return t.Format("02 Jan 2006") },
+		"route": func(name string, params ...interface{}) string {
+			switch name {
+			case "admin.wisata.edit":
+				if len(params) > 0 {
+					return fmt.Sprintf("/admin/wisata/edit/%v", params[0])
+				}
+				return "/admin/wisata/edit"
+			case "admin.wisata.delete":
+				if len(params) > 0 {
+					return fmt.Sprintf("/admin/wisata/delete/%v", params[0])
+				}
+				return "/admin/wisata/delete"
+			case "admin.wisata.index":
+				return "/admin/wisata"
+			case "admin.wisata.create":
+				return "/admin/wisata/create"
+			case "admin.warga.edit":
+				if len(params) > 0 {
+					return fmt.Sprintf("/admin/warga/edit/%v", params[0])
+				}
+				return "/admin/warga/edit"
+			case "admin.warga.delete":
+				if len(params) > 0 {
+					return fmt.Sprintf("/admin/warga/delete/%v", params[0])
+				}
+				return "/admin/warga/delete"
+			default:
+				return "#"
+			}
+		},
 	}
 
 	templates = template.Must(template.New("").Funcs(funcMap).ParseGlob("views/*.html"))
@@ -40,17 +62,15 @@ func main() {
 	template.Must(templates.ParseGlob("views/admin/*.html"))
 	template.Must(templates.ParseGlob("views/admin/wisata/*.html"))
 	template.Must(templates.ParseGlob("views/admin/datawarga/*.html"))
-	template.Must(templates.ParseGlob("views/admin/bansos/*.html"))
+	// Folder views/admin/bansos belum ada, sementara dinonaktifkan
+	// template.Must(templates.ParseGlob("views/admin/bansos/*.html"))
 
 	// Router
 	r := mux.NewRouter()
-
-	// Static files
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
 	// Routes Frontend
 	r.HandleFunc("/", homeHandler).Methods("GET")
-	r.HandleFunc("/admin", adminDashboardHandler).Methods("GET")
 	r.HandleFunc("/profil", profilHandler).Methods("GET")
 	r.HandleFunc("/berita", beritaHandler).Methods("GET")
 	r.HandleFunc("/berita/{id}", beritaDetailHandler).Methods("GET")
@@ -65,15 +85,14 @@ func main() {
 	r.HandleFunc("/warga", wargaHandler).Methods("GET")
 	r.HandleFunc("/warga/{id}", wargaDetailHandler).Methods("GET")
 
-	// Routes Admin Wisata
+	// Routes Admin
+	r.HandleFunc("/admin", adminDashboardHandler).Methods("GET")
+	r.HandleFunc("/admin/dashboard", adminDashboardHandler).Methods("GET")
 	r.HandleFunc("/admin/wisata", adminWisataIndexHandler).Methods("GET")
 	r.HandleFunc("/admin/wisata/create", adminWisataCreateHandler).Methods("GET")
 	r.HandleFunc("/admin/wisata/edit/{id}", adminWisataEditHandler).Methods("GET")
-
-	// Routes Admin Login & Dashboard
 	r.HandleFunc("/login", loginHandler).Methods("GET")
 	r.HandleFunc("/login", doLoginHandler).Methods("POST")
-	r.HandleFunc("/admin/dashboard", adminDashboardHandler).Methods("GET")
 	r.HandleFunc("/logout", logoutHandler).Methods("GET")
 
 	fmt.Println("🌐 Server running on http://localhost:9090")
@@ -83,11 +102,10 @@ func main() {
 // ==================== HOME ====================
 func homeHandler(w http.ResponseWriter, r *http.Request) {
 	var totalPenduduk, totalKK, totalRW, totalWisata int
-
-	db.QueryRow("SELECT COUNT(*) FROM warga").Scan(&totalPenduduk)
-	db.QueryRow("SELECT COUNT(DISTINCT no_kk) FROM warga WHERE no_kk IS NOT NULL AND no_kk != ''").Scan(&totalKK)
-	db.QueryRow("SELECT COUNT(DISTINCT rw) FROM warga WHERE rw IS NOT NULL AND rw != ''").Scan(&totalRW)
-	db.QueryRow("SELECT COUNT(*) FROM wisatas").Scan(&totalWisata)
+	config.DB.QueryRow("SELECT COUNT(*) FROM warga").Scan(&totalPenduduk)
+	config.DB.QueryRow("SELECT COUNT(DISTINCT no_kk) FROM warga WHERE no_kk IS NOT NULL AND no_kk != ''").Scan(&totalKK)
+	config.DB.QueryRow("SELECT COUNT(DISTINCT rw) FROM warga WHERE rw IS NOT NULL AND rw != ''").Scan(&totalRW)
+	config.DB.QueryRow("SELECT COUNT(*) FROM wisatas").Scan(&totalWisata)
 
 	data := map[string]interface{}{
 		"Title":         "Beranda",
@@ -116,7 +134,7 @@ type Berita struct {
 }
 
 func beritaHandler(w http.ResponseWriter, r *http.Request) {
-	rows, err := db.Query("SELECT id, judul, isi, gambar, penulis, views, created_at FROM beritas ORDER BY created_at DESC")
+	rows, err := config.DB.Query("SELECT id, judul, isi, gambar, penulis, views, created_at FROM beritas ORDER BY created_at DESC")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -142,14 +160,14 @@ func beritaDetailHandler(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(vars["id"])
 
 	var b Berita
-	err := db.QueryRow("SELECT id, judul, isi, gambar, penulis, views, created_at FROM beritas WHERE id = ?", id).
+	err := config.DB.QueryRow("SELECT id, judul, isi, gambar, penulis, views, created_at FROM beritas WHERE id = ?", id).
 		Scan(&b.ID, &b.Judul, &b.Isi, &b.Gambar, &b.Penulis, &b.Views, &b.CreatedAt)
 	if err != nil {
 		http.NotFound(w, r)
 		return
 	}
 
-	db.Exec("UPDATE beritas SET views = views + 1 WHERE id = ?", id)
+	config.DB.Exec("UPDATE beritas SET views = views + 1 WHERE id = ?", id)
 
 	data := map[string]interface{}{
 		"Title":   b.Judul,
@@ -163,7 +181,7 @@ func beritaDetailHandler(w http.ResponseWriter, r *http.Request) {
 	templates.ExecuteTemplate(w, "berita_detail.html", data)
 }
 
-// ==================== WISATA ====================
+// ==================== WISATA (Frontend) ====================
 type Wisata struct {
 	ID             int
 	NamaWisata     string
@@ -176,7 +194,7 @@ type Wisata struct {
 }
 
 func wisataHandler(w http.ResponseWriter, r *http.Request) {
-	rows, err := db.Query("SELECT id, nama_wisata, deskripsi, lokasi, gambar, harga_tiket, jam_operasional, status FROM wisatas")
+	rows, err := config.DB.Query("SELECT id, nama_wisata, deskripsi, lokasi, gambar, harga_tiket, jam_operasional, status FROM wisatas")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -197,17 +215,79 @@ func wisataHandler(w http.ResponseWriter, r *http.Request) {
 	templates.ExecuteTemplate(w, "wisata.html", data)
 }
 
-// ==================== ADMIN WISATA ====================
+// ==================== ADMIN ====================
+func adminDashboardHandler(w http.ResponseWriter, r *http.Request) {
+	var totalWarga, totalBerita, totalPengaduan int
+	config.DB.QueryRow("SELECT COUNT(*) FROM warga").Scan(&totalWarga)
+	config.DB.QueryRow("SELECT COUNT(*) FROM beritas").Scan(&totalBerita)
+	config.DB.QueryRow("SELECT COUNT(*) FROM pengaduan").Scan(&totalPengaduan)
+
+	data := map[string]interface{}{
+		"Title":          "Dashboard Admin",
+		"TotalWarga":     totalWarga,
+		"TotalBerita":    totalBerita,
+		"TotalPengaduan": totalPengaduan,
+	}
+	err := templates.ExecuteTemplate(w, "admin/dashboard", data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+// ADMIN WISATA
 func adminWisataIndexHandler(w http.ResponseWriter, r *http.Request) {
-	templates.ExecuteTemplate(w, "admin/wisata/index.html", nil)
+	rows, err := config.DB.Query("SELECT id, nama_wisata, deskripsi, lokasi, gambar, harga_tiket, jam_operasional, status FROM wisatas")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	var wisataList []Wisata
+	for rows.Next() {
+		var w Wisata
+		rows.Scan(&w.ID, &w.NamaWisata, &w.Deskripsi, &w.Lokasi, &w.Gambar, &w.HargaTiket, &w.JamOperasional, &w.Status)
+		wisataList = append(wisataList, w)
+	}
+
+	data := map[string]interface{}{
+		"Title":      "Kelola Wisata",
+		"WisataList": wisataList,
+	}
+	err = templates.ExecuteTemplate(w, "admin/wisata/index", data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func adminWisataCreateHandler(w http.ResponseWriter, r *http.Request) {
-	templates.ExecuteTemplate(w, "admin/wisata/create.html", nil)
+	data := map[string]interface{}{"Title": "Tambah Wisata"}
+	err := templates.ExecuteTemplate(w, "admin/wisata/create", data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func adminWisataEditHandler(w http.ResponseWriter, r *http.Request) {
-	templates.ExecuteTemplate(w, "admin/wisata/edit.html", nil)
+	vars := mux.Vars(r)
+	id, _ := strconv.Atoi(vars["id"])
+
+	var wisata Wisata
+	err := config.DB.QueryRow("SELECT id, nama_wisata, deskripsi, lokasi, gambar, harga_tiket, jam_operasional, status FROM wisatas WHERE id = ?", id).
+		Scan(&wisata.ID, &wisata.NamaWisata, &wisata.Deskripsi, &wisata.Lokasi, &wisata.Gambar, &wisata.HargaTiket, &wisata.JamOperasional, &wisata.Status)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	data := map[string]interface{}{
+		"Title":  "Edit Wisata",
+		"Wisata": wisata,
+	}
+	err = templates.ExecuteTemplate(w, "admin/wisata/edit", data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 // ==================== PENGADUAN ====================
@@ -221,7 +301,7 @@ func pengaduanHandler(w http.ResponseWriter, r *http.Request) {
 
 func kirimPengaduanHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	_, err := db.Exec("INSERT INTO pengaduan (nama, nik, no_hp, judul, isi, status) VALUES (?, ?, ?, ?, ?, 'baru')",
+	_, err := config.DB.Exec("INSERT INTO pengaduan (nama, nik, no_hp, judul, isi, status) VALUES (?, ?, ?, ?, ?, 'baru')",
 		r.FormValue("nama"), r.FormValue("nik"), r.FormValue("no_hp"), r.FormValue("judul"), r.FormValue("isi"))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -241,7 +321,7 @@ func cariBansosHandler(w http.ResponseWriter, r *http.Request) {
 	nik := r.FormValue("nik")
 
 	var nama, jenis, alamat, status string
-	err := db.QueryRow("SELECT nama_penerima, jenis_bantuan, alamat, status FROM bansos WHERE nik = ?", nik).
+	err := config.DB.QueryRow("SELECT nama_penerima, jenis_bantuan, alamat, status FROM bansos WHERE nik = ?", nik).
 		Scan(&nama, &jenis, &alamat, &status)
 
 	data := map[string]interface{}{
@@ -269,7 +349,7 @@ func kirimSuratHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	no_pengajuan := fmt.Sprintf("SURAT/%s/%d", time.Now().Format("20060102"), time.Now().UnixNano()%1000)
 
-	_, err := db.Exec(`INSERT INTO pengajuan_surat (no_pengajuan, nama, nik, alamat, no_hp, jenis_surat, keperluan, status) 
+	_, err := config.DB.Exec(`INSERT INTO pengajuan_surat (no_pengajuan, nama, nik, alamat, no_hp, jenis_surat, keperluan, status) 
         VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')`,
 		no_pengajuan, r.FormValue("nama"), r.FormValue("nik"), r.FormValue("alamat"), r.FormValue("no_hp"), r.FormValue("jenis_surat"), r.FormValue("keperluan"))
 	if err != nil {
@@ -298,7 +378,7 @@ type Warga struct {
 }
 
 func wargaHandler(w http.ResponseWriter, r *http.Request) {
-	rows, err := db.Query("SELECT id, nik, nama_lengkap, alamat, no_hp, no_kk, rw, created_at, updated_at FROM warga ORDER BY id DESC")
+	rows, err := config.DB.Query("SELECT id, nik, nama_lengkap, alamat, no_hp, no_kk, rw, created_at, updated_at FROM warga ORDER BY id DESC")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -313,8 +393,8 @@ func wargaHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var totalKK, totalRW int
-	db.QueryRow("SELECT COUNT(DISTINCT no_kk) FROM warga WHERE no_kk IS NOT NULL AND no_kk != ''").Scan(&totalKK)
-	db.QueryRow("SELECT COUNT(DISTINCT rw) FROM warga WHERE rw IS NOT NULL AND rw != ''").Scan(&totalRW)
+	config.DB.QueryRow("SELECT COUNT(DISTINCT no_kk) FROM warga WHERE no_kk IS NOT NULL AND no_kk != ''").Scan(&totalKK)
+	config.DB.QueryRow("SELECT COUNT(DISTINCT rw) FROM warga WHERE rw IS NOT NULL AND rw != ''").Scan(&totalRW)
 
 	data := map[string]interface{}{
 		"Title":      "Data Warga",
@@ -332,7 +412,7 @@ func wargaDetailHandler(w http.ResponseWriter, r *http.Request) {
 
 	var wg Warga
 	query := "SELECT id, nik, nama_lengkap, alamat, no_hp, no_kk, rw, created_at, updated_at FROM warga WHERE id = ?"
-	err := db.QueryRow(query, id).Scan(
+	err := config.DB.QueryRow(query, id).Scan(
 		&wg.ID,
 		&wg.NIK,
 		&wg.NamaLengkap,
@@ -355,7 +435,7 @@ func wargaDetailHandler(w http.ResponseWriter, r *http.Request) {
 	templates.ExecuteTemplate(w, "warga_detail.html", data)
 }
 
-// ==================== LOGIN ADMIN ====================
+// ==================== LOGIN & LOGOUT ====================
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	errorMsg := r.URL.Query().Get("error")
 	html := `
@@ -402,17 +482,6 @@ func doLoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.Redirect(w, r, "/login?error=Email+atau+password+salah", http.StatusSeeOther)
-}
-
-func adminDashboardHandler(w http.ResponseWriter, r *http.Request) {
-	data := map[string]interface{}{
-		"Title": "Dashboard Admin",
-	}
-	err := templates.ExecuteTemplate(w, "admin/dashboard.html", data)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
 }
 
 func logoutHandler(w http.ResponseWriter, r *http.Request) {
