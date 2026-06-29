@@ -1,0 +1,102 @@
+{{define "admin/pengaduan/show.html"}}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detail Pengaduan - Admin Desa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body class="bg-gray-100">
+
+<div class="flex min-h-screen">
+    {{template "admin_sidebar.html" .}}
+
+    <div class="ml-64 flex-1">
+        {{template "admin_header.html" .}}
+
+        <div class="p-6 max-w-3xl">
+            <div class="flex items-center gap-4 mb-6">
+                <a href="/admin/pengaduan" class="text-green-600 hover:text-green-800">
+                    <i class="fas fa-arrow-left"></i> Kembali
+                </a>
+                <h2 class="text-2xl font-bold text-green-800">Detail Pengaduan</h2>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="bg-green-700 px-6 py-4">
+                    <h3 class="text-xl font-bold text-white">{{.Pengaduan.Judul}}</h3>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <label class="text-sm text-gray-500">Nama Pelapor</label>
+                            <p class="font-semibold text-gray-800">{{.Pengaduan.Nama}}</p>
+                        </div>
+                        <div>
+                            <label class="text-sm text-gray-500">NIK</label>
+                            <p class="font-semibold text-gray-800">{{.Pengaduan.NIK}}</p>
+                        </div>
+                        <div>
+                            <label class="text-sm text-gray-500">No HP</label>
+                            <p class="font-semibold text-gray-800">{{.Pengaduan.NoHP}}</p>
+                        </div>
+                        <div>
+                            <label class="text-sm text-gray-500">Status</label>
+                            <p>
+                                {{if eq .Pengaduan.Status "baru"}}
+                                    <span class="px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">Baru</span>
+                                {{else if eq .Pengaduan.Status "dibaca"}}
+                                    <span class="px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">Dibaca</span>
+                                {{else if eq .Pengaduan.Status "ditindaklanjuti"}}
+                                    <span class="px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">Ditindaklanjuti</span>
+                                {{else}}
+                                    <span class="px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">Selesai</span>
+                                {{end}}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="text-sm text-gray-500">Isi Pengaduan</label>
+                        <div class="bg-gray-50 p-4 rounded-lg mt-1">
+                            <p class="text-gray-700">{{.Pengaduan.Isi}}</p>
+                        </div>
+                    </div>
+
+                    {{if .Pengaduan.Balasan}}
+                    <div class="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
+                        <label class="text-sm font-semibold text-green-700">Balasan Admin</label>
+                        <p class="text-gray-700 mt-2">{{.Pengaduan.Balasan}}</p>
+                    </div>
+                    {{end}}
+
+                    <form action="/admin/pengaduan/update/{{.Pengaduan.ID}}" method="POST" class="mt-6 border-t pt-6">
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-semibold mb-2">Update Status</label>
+                            <select name="status" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+                                <option value="baru" {{if eq .Pengaduan.Status "baru"}}selected{{end}}>Baru</option>
+                                <option value="dibaca" {{if eq .Pengaduan.Status "dibaca"}}selected{{end}}>Dibaca</option>
+                                <option value="ditindaklanjuti" {{if eq .Pengaduan.Status "ditindaklanjuti"}}selected{{end}}>Ditindaklanjuti</option>
+                                <option value="selesai" {{if eq .Pengaduan.Status "selesai"}}selected{{end}}>Selesai</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-semibold mb-2">Balasan Admin</label>
+                            <textarea name="balasan" rows="4" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">{{.Pengaduan.Balasan}}</textarea>
+                        </div>
+                        <div class="flex gap-3">
+                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition">Simpan Perubahan</button>
+                            <a href="/admin/pengaduan" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition">Kembali</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
+{{end}}

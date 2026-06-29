@@ -1,46 +1,82 @@
-{{define "admin/wisata/index"}}
+{{define "admin/wisata/index.html"}}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Wisata - Admin Desa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body class="bg-gray-100">
 
-{{template "admin_header.html" .}}
+<div class="flex min-h-screen">
+    {{template "admin_sidebar.html" .}}
 
-{{template "admin_sidebar.html" .}}
+    <div class="ml-64 flex-1">
+        {{template "admin_header.html" .}}
 
-<div class="main">
-    <div class="header">
-        <h1>Kelola Wisata</h1>
-        <a href="{{ route "admin.wisata.create" }}" class="btn btn-primary">Tambah Wisata</a>
+        <div class="p-6">
+            <div class="flex flex-wrap justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-green-800">Daftar Destinasi Wisata</h2>
+                <a href="/admin/wisata/create" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition flex items-center gap-2">
+                    <i class="fas fa-plus"></i> Tambah Wisata
+                </a>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full">
+                        <thead class="bg-green-700 text-white">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-sm font-semibold">#</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold">Nama Wisata</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold">Lokasi</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold">Harga Tiket</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold">Status</th>
+                                <th class="px-4 py-3 text-center text-sm font-semibold">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{if .WisataList}}
+                                {{range $index, $item := .WisataList}}
+                                <tr class="border-b hover:bg-gray-50 transition">
+                                    <td class="px-4 py-3 text-sm">{{add $index 1}}</td>
+                                    <td class="px-4 py-3 text-sm font-medium text-gray-800">{{$item.NamaWisata}}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-600">{{$item.Lokasi}}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-600">{{$item.HargaTiket}}</td>
+                                    <td class="px-4 py-3 text-sm">
+                                        {{if eq $item.Status "buka"}}
+                                            <span class="px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">Buka</span>
+                                        {{else}}
+                                            <span class="px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">Tutup</span>
+                                        {{end}}
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                        <a href="/admin/wisata/edit/{{$item.ID}}" class="text-blue-600 hover:text-blue-800 mr-3">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form action="/admin/wisata/delete/{{$item.ID}}" method="POST" class="inline">
+                                            <button type="submit" class="text-red-600 hover:text-red-800" onclick="return confirm('Yakin hapus wisata ini?')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {{end}}
+                            {{else}}
+                                <tr>
+                                    <td colspan="6" class="px-4 py-6 text-center text-gray-500">Belum ada data wisata. Silakan tambah wisata baru.</td>
+                                </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <table class="table">
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Nama</th>
-                <th>Lokasi</th>
-                <th>Harga</th>
-                <th>Status</th>
-                <th>Aksi</th>
-            </tr>
-        </thead>
-        <tbody>
-            {{range $index, $w := .WisataList}}
-            <tr>
-                <td>{{add $index 1}}</td>
-                <td>{{$w.NamaWisata}}</td>
-                <td>{{$w.Lokasi}}</td>
-                <td>{{$w.HargaTiket}}</td>
-                <td>{{$w.Status}}</td>
-                <td>
-                    <a href="{{ route "admin.wisata.edit" $w.ID }}">Edit</a>
-                    <a href="{{ route "admin.wisata.delete" $w.ID }}" onclick="return confirm('Yakin hapus?')">Hapus</a>
-                </td>
-            </tr>
-            {{else}}
-            <tr><td colspan="6">Belum ada data wisata.</td></tr>
-            {{end}}
-        </tbody>
-    </table>
 </div>
 
-{{template "footer.html" .}}
-
+</body>
+</html>
 {{end}}

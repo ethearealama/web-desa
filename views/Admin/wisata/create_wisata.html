@@ -1,51 +1,74 @@
-{{define "admin/wisata/create"}}
+{{define "admin/wisata/create.html"}}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tambah Wisata - Admin Desa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body class="bg-gray-100">
 
-{{template "admin_header.html" .}}
+<div class="flex min-h-screen">
+    {{template "admin_sidebar.html" .}}
 
-{{template "admin_sidebar.html" .}}
+    <div class="ml-64 flex-1">
+        {{template "admin_header.html" .}}
 
-<div class="main">
-    <div class="header">
-        <h1>Tambah Wisata</h1>
+        <div class="p-6 max-w-2xl">
+            <div class="flex items-center gap-4 mb-6">
+                <a href="/admin/wisata" class="text-green-600 hover:text-green-800">
+                    <i class="fas fa-arrow-left"></i> Kembali
+                </a>
+                <h2 class="text-2xl font-bold text-green-800">Tambah Wisata Baru</h2>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <form method="POST" action="/admin/wisata/store" enctype="multipart/form-data">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 font-semibold mb-2">Nama Wisata <span class="text-red-500">*</span></label>
+                        <input type="text" name="nama_wisata" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 font-semibold mb-2">Deskripsi <span class="text-red-500">*</span></label>
+                        <textarea name="deskripsi" rows="4" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500" required></textarea>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 font-semibold mb-2">Lokasi <span class="text-red-500">*</span></label>
+                        <input type="text" name="lokasi" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Harga Tiket</label>
+                            <input type="text" name="harga_tiket" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Rp 10.000">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Jam Operasional</label>
+                            <input type="text" name="jam_operasional" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="08:00 - 17:00">
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 font-semibold mb-2">Status</label>
+                        <select name="status" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+                            <option value="buka">Buka</option>
+                            <option value="tutup">Tutup</option>
+                        </select>
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-gray-700 font-semibold mb-2">Gambar (opsional)</label>
+                        <input type="file" name="gambar" accept="image/*" class="w-full border border-gray-300 rounded-lg px-4 py-2">
+                    </div>
+                    <div class="flex gap-3">
+                        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition">Simpan</button>
+                        <a href="/admin/wisata" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition">Batal</a>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-
-    <form action="/admin/wisata" method="POST" enctype="multipart/form-data">
-        <div class="form-group">
-            <label>Nama Wisata</label>
-            <input type="text" name="nama_wisata" required>
-        </div>
-        <div class="form-group">
-            <label>Deskripsi</label>
-            <textarea name="deskripsi" rows="5"></textarea>
-        </div>
-        <div class="form-group">
-            <label>Lokasi</label>
-            <input type="text" name="lokasi">
-        </div>
-        <div class="form-group">
-            <label>Harga Tiket</label>
-            <input type="text" name="harga_tiket">
-        </div>
-        <div class="form-group">
-            <label>Jam Operasional</label>
-            <input type="text" name="jam_operasional">
-        </div>
-        <div class="form-group">
-            <label>Gambar</label>
-            <input type="file" name="gambar">
-        </div>
-        <div class="form-group">
-            <label>Status</label>
-            <select name="status">
-                <option value="aktif">Aktif</option>
-                <option value="tutup">Tutup</option>
-            </select>
-        </div>
-        <button type="submit" class="btn btn-success">Simpan</button>
-        <a href="{{ route "admin.wisata.index" }}" class="btn btn-secondary">Batal</a>
-    </form>
 </div>
 
-{{template "footer.html" .}}
-
+</body>
+</html>
 {{end}}

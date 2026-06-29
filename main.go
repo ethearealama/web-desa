@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"go-desa/config" // sesuaikan dengan nama module Anda
+	"go-desa/config"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
@@ -16,8 +16,55 @@ import (
 
 var templates *template.Template
 
+// ==================== STRUKTUR DATA ====================
+type Berita struct {
+	ID        int
+	Judul     string
+	Isi       string
+	Gambar    string
+	Penulis   string
+	Views     int
+	CreatedAt time.Time
+}
+
+type Wisata struct {
+	ID             int
+	NamaWisata     string
+	Deskripsi      string
+	Lokasi         string
+	Gambar         string
+	HargaTiket     string
+	JamOperasional string
+	Status         string
+}
+
+type Warga struct {
+	ID          int
+	NIK         string
+	NamaLengkap string
+	Alamat      string
+	NoHP        string
+	NoKK        string
+	RW          string
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+}
+
+type AdminPengaduan struct {
+	ID        int
+	Nama      string
+	NIK       string
+	NoHP      string
+	Judul     string
+	Isi       string
+	Status    string
+	Balasan   string
+	CreatedAt string
+}
+
+// ==================== MAIN ====================
 func main() {
-	// Koneksi database dari package config
+	// Koneksi database dari config
 	config.ConnectDB()
 	defer config.DB.Close()
 
@@ -25,51 +72,20 @@ func main() {
 	funcMap := template.FuncMap{
 		"add":        func(a, b int) int { return a + b },
 		"formatDate": func(t time.Time) string { return t.Format("02 Jan 2006") },
-		"route": func(name string, params ...interface{}) string {
-			switch name {
-			case "admin.wisata.edit":
-				if len(params) > 0 {
-					return fmt.Sprintf("/admin/wisata/edit/%v", params[0])
-				}
-				return "/admin/wisata/edit"
-			case "admin.wisata.delete":
-				if len(params) > 0 {
-					return fmt.Sprintf("/admin/wisata/delete/%v", params[0])
-				}
-				return "/admin/wisata/delete"
-			case "admin.wisata.index":
-				return "/admin/wisata"
-			case "admin.wisata.create":
-				return "/admin/wisata/create"
-			case "admin.warga.edit":
-				if len(params) > 0 {
-					return fmt.Sprintf("/admin/warga/edit/%v", params[0])
-				}
-				return "/admin/warga/edit"
-			case "admin.warga.delete":
-				if len(params) > 0 {
-					return fmt.Sprintf("/admin/warga/delete/%v", params[0])
-				}
-				return "/admin/warga/delete"
-			default:
-				return "#"
-			}
-		},
 	}
 
+	// Load semua template
 	templates = template.Must(template.New("").Funcs(funcMap).ParseGlob("views/*.html"))
 	template.Must(templates.ParseGlob("views/layouts/*.html"))
 	template.Must(templates.ParseGlob("views/admin/*.html"))
 	template.Must(templates.ParseGlob("views/admin/wisata/*.html"))
-	template.Must(templates.ParseGlob("views/admin/datawarga/*.html"))
-	// Folder views/admin/bansos belum ada, sementara dinonaktifkan
-	// template.Must(templates.ParseGlob("views/admin/bansos/*.html"))
+	template.Must(templates.ParseGlob("views/admin/pengaduan/*.html"))
 
 	// Router
 	r := mux.NewRouter()
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
-	// Routes Frontend
+	// ==================== ROUTES FRONTEND ====================
 	r.HandleFunc("/", homeHandler).Methods("GET")
 	r.HandleFunc("/profil", profilHandler).Methods("GET")
 	r.HandleFunc("/berita", beritaHandler).Methods("GET")
@@ -85,15 +101,25 @@ func main() {
 	r.HandleFunc("/warga", wargaHandler).Methods("GET")
 	r.HandleFunc("/warga/{id}", wargaDetailHandler).Methods("GET")
 
-	// Routes Admin
-	r.HandleFunc("/admin", adminDashboardHandler).Methods("GET")
-	r.HandleFunc("/admin/dashboard", adminDashboardHandler).Methods("GET")
-	r.HandleFunc("/admin/wisata", adminWisataIndexHandler).Methods("GET")
-	r.HandleFunc("/admin/wisata/create", adminWisataCreateHandler).Methods("GET")
-	r.HandleFunc("/admin/wisata/edit/{id}", adminWisataEditHandler).Methods("GET")
+	// ==================== ROUTES ADMIN LOGIN ====================
 	r.HandleFunc("/login", loginHandler).Methods("GET")
 	r.HandleFunc("/login", doLoginHandler).Methods("POST")
+	r.HandleFunc("/admin/dashboard", adminDashboardHandler).Methods("GET")
 	r.HandleFunc("/logout", logoutHandler).Methods("GET")
+
+	// ==================== ROUTES ADMIN WISATA ====================
+	r.HandleFunc("/admin/wisata", adminWisataHandler).Methods("GET")
+	r.HandleFunc("/admin/wisata/create", adminWisataCreateHandler).Methods("GET")
+	r.HandleFunc("/admin/wisata/store", adminWisataStoreHandler).Methods("POST")
+	r.HandleFunc("/admin/wisata/edit/{id}", adminWisataEditHandler).Methods("GET")
+	r.HandleFunc("/admin/wisata/update/{id}", adminWisataUpdateHandler).Methods("POST")
+	r.HandleFunc("/admin/wisata/delete/{id}", adminWisataDeleteHandler).Methods("POST")
+
+	// ==================== ROUTES ADMIN PENGADUAN ====================
+	r.HandleFunc("/admin/pengaduan", adminPengaduanHandler).Methods("GET")
+	r.HandleFunc("/admin/pengaduan/show/{id}", adminPengaduanShowHandler).Methods("GET")
+	r.HandleFunc("/admin/pengaduan/update/{id}", adminPengaduanUpdateHandler).Methods("POST")
+	r.HandleFunc("/admin/pengaduan/delete/{id}", adminPengaduanDeleteHandler).Methods("POST")
 
 	fmt.Println("🌐 Server running on http://localhost:9090")
 	log.Fatal(http.ListenAndServe(":9090", r))
@@ -123,16 +149,6 @@ func profilHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // ==================== BERITA ====================
-type Berita struct {
-	ID        int
-	Judul     string
-	Isi       string
-	Gambar    string
-	Penulis   string
-	Views     int
-	CreatedAt time.Time
-}
-
 func beritaHandler(w http.ResponseWriter, r *http.Request) {
 	rows, err := config.DB.Query("SELECT id, judul, isi, gambar, penulis, views, created_at FROM beritas ORDER BY created_at DESC")
 	if err != nil {
@@ -181,18 +197,7 @@ func beritaDetailHandler(w http.ResponseWriter, r *http.Request) {
 	templates.ExecuteTemplate(w, "berita_detail.html", data)
 }
 
-// ==================== WISATA (Frontend) ====================
-type Wisata struct {
-	ID             int
-	NamaWisata     string
-	Deskripsi      string
-	Lokasi         string
-	Gambar         string
-	HargaTiket     string
-	JamOperasional string
-	Status         string
-}
-
+// ==================== WISATA (FRONTEND) ====================
 func wisataHandler(w http.ResponseWriter, r *http.Request) {
 	rows, err := config.DB.Query("SELECT id, nama_wisata, deskripsi, lokasi, gambar, harga_tiket, jam_operasional, status FROM wisatas")
 	if err != nil {
@@ -203,9 +208,9 @@ func wisataHandler(w http.ResponseWriter, r *http.Request) {
 
 	var wisataList []Wisata
 	for rows.Next() {
-		var w Wisata
-		rows.Scan(&w.ID, &w.NamaWisata, &w.Deskripsi, &w.Lokasi, &w.Gambar, &w.HargaTiket, &w.JamOperasional, &w.Status)
-		wisataList = append(wisataList, w)
+		var wisataItem Wisata
+		rows.Scan(&wisataItem.ID, &wisataItem.NamaWisata, &wisataItem.Deskripsi, &wisataItem.Lokasi, &wisataItem.Gambar, &wisataItem.HargaTiket, &wisataItem.JamOperasional, &wisataItem.Status)
+		wisataList = append(wisataList, wisataItem)
 	}
 
 	data := map[string]interface{}{
@@ -215,82 +220,7 @@ func wisataHandler(w http.ResponseWriter, r *http.Request) {
 	templates.ExecuteTemplate(w, "wisata.html", data)
 }
 
-// ==================== ADMIN ====================
-func adminDashboardHandler(w http.ResponseWriter, r *http.Request) {
-	var totalWarga, totalBerita, totalPengaduan int
-	config.DB.QueryRow("SELECT COUNT(*) FROM warga").Scan(&totalWarga)
-	config.DB.QueryRow("SELECT COUNT(*) FROM beritas").Scan(&totalBerita)
-	config.DB.QueryRow("SELECT COUNT(*) FROM pengaduan").Scan(&totalPengaduan)
-
-	data := map[string]interface{}{
-		"Title":          "Dashboard Admin",
-		"TotalWarga":     totalWarga,
-		"TotalBerita":    totalBerita,
-		"TotalPengaduan": totalPengaduan,
-	}
-	err := templates.ExecuteTemplate(w, "admin/dashboard", data)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-}
-
-// ADMIN WISATA
-func adminWisataIndexHandler(w http.ResponseWriter, r *http.Request) {
-	rows, err := config.DB.Query("SELECT id, nama_wisata, deskripsi, lokasi, gambar, harga_tiket, jam_operasional, status FROM wisatas")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer rows.Close()
-
-	var wisataList []Wisata
-	for rows.Next() {
-		var w Wisata
-		rows.Scan(&w.ID, &w.NamaWisata, &w.Deskripsi, &w.Lokasi, &w.Gambar, &w.HargaTiket, &w.JamOperasional, &w.Status)
-		wisataList = append(wisataList, w)
-	}
-
-	data := map[string]interface{}{
-		"Title":      "Kelola Wisata",
-		"WisataList": wisataList,
-	}
-	err = templates.ExecuteTemplate(w, "admin/wisata/index", data)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-}
-
-func adminWisataCreateHandler(w http.ResponseWriter, r *http.Request) {
-	data := map[string]interface{}{"Title": "Tambah Wisata"}
-	err := templates.ExecuteTemplate(w, "admin/wisata/create", data)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-}
-
-func adminWisataEditHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id, _ := strconv.Atoi(vars["id"])
-
-	var wisata Wisata
-	err := config.DB.QueryRow("SELECT id, nama_wisata, deskripsi, lokasi, gambar, harga_tiket, jam_operasional, status FROM wisatas WHERE id = ?", id).
-		Scan(&wisata.ID, &wisata.NamaWisata, &wisata.Deskripsi, &wisata.Lokasi, &wisata.Gambar, &wisata.HargaTiket, &wisata.JamOperasional, &wisata.Status)
-	if err != nil {
-		http.NotFound(w, r)
-		return
-	}
-
-	data := map[string]interface{}{
-		"Title":  "Edit Wisata",
-		"Wisata": wisata,
-	}
-	err = templates.ExecuteTemplate(w, "admin/wisata/edit", data)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-}
-
-// ==================== PENGADUAN ====================
+// ==================== PENGADUAN (FRONTEND) ====================
 func pengaduanHandler(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{
 		"Title":   "Pengaduan",
@@ -364,19 +294,7 @@ func suratTrackingHandler(w http.ResponseWriter, r *http.Request) {
 	templates.ExecuteTemplate(w, "surat_tracking.html", data)
 }
 
-// ==================== WARGA ====================
-type Warga struct {
-	ID          int
-	NIK         string
-	NamaLengkap string
-	Alamat      string
-	NoHP        string
-	NoKK        string
-	RW          string
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
-}
-
+// ==================== WARGA (FRONTEND) ====================
 func wargaHandler(w http.ResponseWriter, r *http.Request) {
 	rows, err := config.DB.Query("SELECT id, nik, nama_lengkap, alamat, no_hp, no_kk, rw, created_at, updated_at FROM warga ORDER BY id DESC")
 	if err != nil {
@@ -435,7 +353,7 @@ func wargaDetailHandler(w http.ResponseWriter, r *http.Request) {
 	templates.ExecuteTemplate(w, "warga_detail.html", data)
 }
 
-// ==================== LOGIN & LOGOUT ====================
+// ==================== LOGIN ADMIN ====================
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	errorMsg := r.URL.Query().Get("error")
 	html := `
@@ -484,6 +402,223 @@ func doLoginHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/login?error=Email+atau+password+salah", http.StatusSeeOther)
 }
 
+func adminDashboardHandler(w http.ResponseWriter, r *http.Request) {
+	html := `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Dashboard Admin</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <body class="bg-gray-100">
+        <nav class="bg-green-700 text-white shadow-lg">
+            <div class="container mx-auto px-4 py-3 flex justify-between">
+                <span class="font-bold">Admin Panel - Desa Sukaindah</span>
+                <a href="/logout" class="bg-red-600 px-4 py-1 rounded">Logout</a>
+            </div>
+        </nav>
+        <div class="container mx-auto px-4 py-8">
+            <div class="bg-white p-6 rounded shadow">
+                <h1 class="text-2xl font-bold text-green-800">Selamat Datang, Admin!</h1>
+                <p>Ini dashboard admin Desa Sukaindah.</p>
+                <div class="grid md:grid-cols-4 gap-4 mt-6">
+                    <a href="/admin/wisata" class="bg-blue-100 p-4 rounded text-center hover:bg-blue-200">🏞️ Wisata</a>
+                    <a href="/admin/pengaduan" class="bg-red-100 p-4 rounded text-center hover:bg-red-200">📢 Pengaduan</a>
+                    <a href="/admin/berita" class="bg-green-100 p-4 rounded text-center hover:bg-green-200">📰 Berita</a>
+                    <a href="/admin/bansos" class="bg-yellow-100 p-4 rounded text-center hover:bg-yellow-200">🎁 Bansos</a>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    `
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(html))
+}
+
 func logoutHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
+}
+
+// ==================== ADMIN WISATA ====================
+func adminWisataHandler(w http.ResponseWriter, r *http.Request) {
+	rows, err := config.DB.Query("SELECT id, nama_wisata, lokasi, harga_tiket, status FROM wisatas ORDER BY id DESC")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	var wisataList []Wisata
+	for rows.Next() {
+		var wisataItem Wisata
+		rows.Scan(&wisataItem.ID, &wisataItem.NamaWisata, &wisataItem.Lokasi, &wisataItem.HargaTiket, &wisataItem.Status)
+		wisataList = append(wisataList, wisataItem)
+	}
+
+	data := map[string]interface{}{
+		"Title":      "Kelola Wisata",
+		"WisataList": wisataList,
+	}
+	templates.ExecuteTemplate(w, "admin/wisata/index.html", data)
+}
+
+func adminWisataCreateHandler(w http.ResponseWriter, r *http.Request) {
+	data := map[string]interface{}{"Title": "Tambah Wisata"}
+	templates.ExecuteTemplate(w, "admin/wisata/create.html", data)
+}
+
+func adminWisataStoreHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	nama := r.FormValue("nama_wisata")
+	deskripsi := r.FormValue("deskripsi")
+	lokasi := r.FormValue("lokasi")
+	harga := r.FormValue("harga_tiket")
+	jam := r.FormValue("jam_operasional")
+	status := r.FormValue("status")
+
+	_, err := config.DB.Exec(`INSERT INTO wisatas (nama_wisata, deskripsi, lokasi, harga_tiket, jam_operasional, status) 
+        VALUES (?, ?, ?, ?, ?, ?)`,
+		nama, deskripsi, lokasi, harga, jam, status)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/admin/wisata", http.StatusSeeOther)
+}
+
+func adminWisataEditHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, _ := strconv.Atoi(vars["id"])
+
+	var wisataItem Wisata
+	err := config.DB.QueryRow("SELECT id, nama_wisata, deskripsi, lokasi, harga_tiket, jam_operasional, status, gambar FROM wisatas WHERE id = ?", id).
+		Scan(&wisataItem.ID, &wisataItem.NamaWisata, &wisataItem.Deskripsi, &wisataItem.Lokasi, &wisataItem.HargaTiket, &wisataItem.JamOperasional, &wisataItem.Status, &wisataItem.Gambar)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	data := map[string]interface{}{
+		"Title":  "Edit Wisata",
+		"Wisata": wisataItem,
+	}
+	templates.ExecuteTemplate(w, "admin/wisata/edit.html", data)
+}
+
+func adminWisataUpdateHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, _ := strconv.Atoi(vars["id"])
+
+	r.ParseForm()
+	nama := r.FormValue("nama_wisata")
+	deskripsi := r.FormValue("deskripsi")
+	lokasi := r.FormValue("lokasi")
+	harga := r.FormValue("harga_tiket")
+	jam := r.FormValue("jam_operasional")
+	status := r.FormValue("status")
+
+	_, err := config.DB.Exec(`UPDATE wisatas SET 
+        nama_wisata = ?, deskripsi = ?, lokasi = ?, harga_tiket = ?, jam_operasional = ?, status = ? 
+        WHERE id = ?`,
+		nama, deskripsi, lokasi, harga, jam, status, id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/admin/wisata", http.StatusSeeOther)
+}
+
+func adminWisataDeleteHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, _ := strconv.Atoi(vars["id"])
+
+	_, err := config.DB.Exec("DELETE FROM wisatas WHERE id = ?", id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/admin/wisata", http.StatusSeeOther)
+}
+
+// ==================== ADMIN PENGADUAN ====================
+func adminPengaduanHandler(w http.ResponseWriter, r *http.Request) {
+	rows, err := config.DB.Query("SELECT id, nama, nik, no_hp, judul, isi, status, balasan, created_at FROM pengaduan ORDER BY id DESC")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	var list []AdminPengaduan
+	var pending, processed, done int
+	for rows.Next() {
+		var p AdminPengaduan
+		rows.Scan(&p.ID, &p.Nama, &p.NIK, &p.NoHP, &p.Judul, &p.Isi, &p.Status, &p.Balasan, &p.CreatedAt)
+		list = append(list, p)
+		switch p.Status {
+		case "baru", "dibaca":
+			pending++
+		case "ditindaklanjuti":
+			processed++
+		case "selesai":
+			done++
+		}
+	}
+
+	data := map[string]interface{}{
+		"Title":          "Kelola Pengaduan",
+		"PengaduanList":  list,
+		"PendingCount":   pending,
+		"ProcessedCount": processed,
+		"DoneCount":      done,
+	}
+	templates.ExecuteTemplate(w, "admin/pengaduan/index.html", data)
+}
+
+func adminPengaduanShowHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, _ := strconv.Atoi(vars["id"])
+
+	var p AdminPengaduan
+	err := config.DB.QueryRow("SELECT id, nama, nik, no_hp, judul, isi, status, balasan, created_at FROM pengaduan WHERE id = ?", id).
+		Scan(&p.ID, &p.Nama, &p.NIK, &p.NoHP, &p.Judul, &p.Isi, &p.Status, &p.Balasan, &p.CreatedAt)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	data := map[string]interface{}{
+		"Title":     "Detail Pengaduan",
+		"Pengaduan": p,
+	}
+	templates.ExecuteTemplate(w, "admin/pengaduan/show.html", data)
+}
+
+func adminPengaduanUpdateHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, _ := strconv.Atoi(vars["id"])
+
+	r.ParseForm()
+	status := r.FormValue("status")
+	balasan := r.FormValue("balasan")
+
+	_, err := config.DB.Exec("UPDATE pengaduan SET status = ?, balasan = ? WHERE id = ?", status, balasan, id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/admin/pengaduan", http.StatusSeeOther)
+}
+
+func adminPengaduanDeleteHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, _ := strconv.Atoi(vars["id"])
+
+	_, err := config.DB.Exec("DELETE FROM pengaduan WHERE id = ?", id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/admin/pengaduan", http.StatusSeeOther)
 }
